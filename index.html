@@ -236,6 +236,7 @@ select:focus,input:focus{
 /* RVR и ELEV - левая колонка */
 .rvr-row{grid-column:1;grid-row:1;flex-direction:row;gap:min(6px,.6vw);justify-content:center;width:100%}
 .elev-row{grid-column:1;grid-row:3;flex-direction:row;gap:min(6px,.6vw);justify-content:center;width:100%}
+.rvr-row,.elev-row,.runway-state-item{padding-block:min(2px,.2vw)}
 
 /* QFE - центральная колонка */
 .qfe-row{grid-column:2;grid-row:1 / span 3;flex-direction:column;align-items:center;gap:min(3px,.3vw);padding:min(8px,.8vw);align-self:stretch}
@@ -330,7 +331,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.16</div>
+<div class="version">v1.0.27-beta</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
