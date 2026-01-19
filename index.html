@@ -222,7 +222,7 @@ select:focus,input:focus{
 .dark .lateral-component,.dark .headwind-component,.dark .friction-coefficient{background:rgba(148,163,184,.15);color:var(--muted)}
 
 /* ========== COMPASS-INFO ========== */
-.compass-info{display:grid;grid-template-columns:30% 40% 30%;grid-template-rows:auto auto;gap:min(6px,0.6vw);margin-top:min(10px,1vh);font-size:clamp(10px,1vw,13px);width:100%}
+.compass-info{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);grid-template-rows:repeat(3,auto);gap:min(6px,0.6vw);margin-top:auto;font-size:clamp(10px,1vw,13px);width:100%}
 
 /* Базовые стили для всех элементов compass-info */
 .compass-info-item{display:flex;align-items:center;padding:min(6px,.6vw) min(8px,.8vw);border-radius:4px}
@@ -235,10 +235,10 @@ select:focus,input:focus{
 
 /* RVR и ELEV - левая колонка */
 .rvr-row{grid-column:1;grid-row:1;flex-direction:row;gap:min(6px,.6vw);justify-content:center}
-.elev-row{grid-column:1;grid-row:2;flex-direction:row;gap:min(6px,.6vw);justify-content:center}
+.elev-row{grid-column:1;grid-row:3;flex-direction:row;gap:min(6px,.6vw);justify-content:center}
 
 /* QFE - центральная колонка */
-.qfe-row{grid-column:2;grid-row:1 / span 2;flex-direction:column;align-items:center;gap:min(3px,.3vw);padding:min(8px,.8vw)}
+.qfe-row{grid-column:2;grid-row:1 / span 3;flex-direction:column;align-items:center;gap:min(3px,.3vw);padding:min(8px,.8vw);align-self:stretch}
 .qfe-row .qfe-fields{display:flex;flex-direction:column;gap:min(3px,.3vw)}
 .qfe-row .qfe-field{display:flex;flex-direction:row;align-items:center;gap:min(6px,.6vw)}
 .qfe-row .qfe-field .qfe-label{color:var(--text);font-size:clamp(11px,1.1vw,14px);font-weight:bold;min-width:35px}
@@ -251,7 +251,7 @@ select:focus,input:focus{
 .qfe-row .qfe-field.secondary .data-field{font-size:clamp(11px,1.1vw,14px);font-weight:normal}
 
 /* RWY STATE - правая колонка */
-.runway-state-row{grid-column:3;grid-row:1 / span 2;flex-direction:column;align-items:center;gap:min(3px,.3vw);padding:min(8px,.8vw)}
+.runway-state-row{grid-column:3;grid-row:1 / span 3;flex-direction:column;align-items:center;gap:min(3px,.3vw);padding:min(8px,.8vw);height:100%;justify-content:space-between;align-self:end}
 .runway-state-item{display:flex;flex-direction:row;align-items:center;gap:min(6px,.6vw)}
 .runway-state-item .state-label{color:var(--text);font-size:clamp(11px,1.1vw,14px);font-weight:bold;min-width:35px}
 .dark .runway-state-item .state-label{color:var(--text)}
@@ -2248,10 +2248,6 @@ function initializeDefaultCompassInfo(compassIndex) {
       <div class="state-value">-</div>
     </div>
     <div class="runway-state-item depth">
-      <div class="state-label" style="visibility:hidden">RWY</div>
-      <div class="state-value">-</div>
-    </div>
-    <div class="runway-state-item friction">
       <div class="state-label" style="visibility:hidden">RWY</div>
       <div class="state-value">-</div>
     </div>
