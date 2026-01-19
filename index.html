@@ -222,7 +222,7 @@ select:focus,input:focus{
 .dark .lateral-component,.dark .headwind-component,.dark .friction-coefficient{background:rgba(148,163,184,.15);color:var(--muted)}
 
 /* ========== COMPASS-INFO ========== */
-.compass-info{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);grid-template-rows:repeat(3,auto);column-gap:min(6px,0.6vw);row-gap:0;margin-top:auto;font-size:clamp(10px,1vw,13px);width:100%;padding-inline:clamp(10px,2vw,16px)}
+.compass-info{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,auto);column-gap:min(6px,0.6vw);row-gap:0;margin-top:auto;font-size:clamp(10px,1vw,13px);width:100%;padding-inline:clamp(10px,2vw,16px)}
 
 /* Базовые стили для всех элементов compass-info */
 .compass-info-item{
@@ -241,23 +241,22 @@ select:focus,input:focus{
 .dark .compass-info-item .units{color:var(--muted)}
 
 /* RVR и ELEV - левая колонка */
-.rvr-row{grid-column:1;grid-row:1;flex-direction:row;gap:min(6px,.6vw);justify-content:center;width:100%}
-.elev-row{grid-column:1;grid-row:3;flex-direction:row;gap:min(6px,.6vw);justify-content:center;width:100%}
-.rvr-row,.elev-row,.runway-state-item{padding-block:min(2px,.2vw)}
+.rvr-row{grid-column:1;grid-row:1;width:100%}
+.elev-row{grid-column:1;grid-row:3;width:100%}
+.compass-spacer{grid-column:1;grid-row:2;height:100%}
+.rvr-row,.elev-row,.runway-state-item,.qfe-row-1,.qfe-row-2,.qfe-row-3{padding-block:min(2px,.2vw)}
 
 /* QFE - центральная колонка */
-.qfe-row{grid-column:2;grid-row:1 / span 3;flex-direction:column;align-items:center;gap:min(3px,.3vw);padding:min(8px,.8vw);align-self:stretch}
-.qfe-row .qfe-fields{display:flex;flex-direction:column;gap:min(3px,.3vw)}
-.qfe-row .qfe-field{display:grid;grid-template-columns:minmax(36px,1fr) auto minmax(34px,1fr);align-items:center;column-gap:min(6px,.6vw)}
-.qfe-row .qfe-field .data-field{background:rgba(148,163,184,.12);padding:min(4px,.4vw) min(8px,.8vw);border-radius:6px;text-align:center;width:clamp(52px,7vw,88px)}
-.dark .qfe-row .qfe-field .data-field{background:rgba(148,163,184,.12);color:var(--text)}
-.qfe-row .qfe-field .units{color:var(--muted);font-size:clamp(11px,1.1vw,14px);text-align:left}
-.dark .qfe-row .qfe-field .units{color:var(--muted)}
-.qfe-row .qfe-field.primary .data-field{font-size:clamp(13px,1.3vw,17px);font-weight:bold}
-.qfe-row .qfe-field.secondary .data-field{font-size:clamp(11px,1.1vw,14px);font-weight:normal}
+.qfe-row-1{grid-column:2;grid-row:1;width:100%}
+.qfe-row-2{grid-column:2;grid-row:2;width:100%}
+.qfe-row-3{grid-column:2;grid-row:3;width:100%}
+.qfe-row-1 .data-field{font-size:clamp(13px,1.3vw,17px);font-weight:bold}
+.qfe-row-2 .data-field,.qfe-row-3 .data-field{font-size:clamp(11px,1.1vw,14px);font-weight:normal}
 
 /* RWY STATE - правая колонка */
-.runway-state-row{grid-column:3;grid-row:1 / span 3;flex-direction:column;align-items:center;gap:0;padding:min(8px,.8vw);height:100%;justify-content:space-between;align-self:end;width:100%}
+.runway-state-item.surface{grid-column:3;grid-row:1}
+.runway-state-item.contamination{grid-column:3;grid-row:2}
+.runway-state-item.depth{grid-column:3;grid-row:3}
 .runway-state-item{white-space:nowrap;width:100%}
 .runway-state-item .state-value{font-weight:normal}
 .runway-state-item.surface .data-field{font-weight:bold}
@@ -338,7 +337,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.30-beta</div>
+<div class="version">v1.0.31-beta</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -2216,28 +2215,36 @@ function initializeDefaultCompassInfo(compassIndex) {
   `;
   compassInfo.appendChild(elevRow);
 
-  const qfeRow = document.createElement('div');
-  qfeRow.className = 'qfe-row';
-  qfeRow.innerHTML = `
-    <div class="qfe-fields">
-      <div class="qfe-field primary compass-info-item">
-        <div class="section-label">QFE</div>
-        <div class="data-field">-</div>
-        <div class="units">hPa</div>
-      </div>
-      <div class="qfe-field secondary compass-info-item">
-        <div class="section-label" style="visibility:hidden">QFE</div>
-        <div class="data-field">-</div>
-        <div class="units">mmHg</div>
-      </div>
-      <div class="qfe-field secondary compass-info-item">
-        <div class="section-label" style="visibility:hidden">QFE</div>
-        <div class="data-field">-</div>
-        <div class="units">inHg</div>
-      </div>
-    </div>
+  const qfeRow1 = document.createElement('div');
+  qfeRow1.className = 'qfe-row-1 compass-info-item';
+  qfeRow1.innerHTML = `
+    <div class="section-label">QFE</div>
+    <div class="data-field">-</div>
+    <div class="units">hPa</div>
   `;
-  compassInfo.appendChild(qfeRow);
+  compassInfo.appendChild(qfeRow1);
+
+  const qfeRow2 = document.createElement('div');
+  qfeRow2.className = 'qfe-row-2 compass-info-item';
+  qfeRow2.innerHTML = `
+    <div class="section-label" style="visibility:hidden">QFE</div>
+    <div class="data-field">-</div>
+    <div class="units">mmHg</div>
+  `;
+  compassInfo.appendChild(qfeRow2);
+
+  const qfeRow3 = document.createElement('div');
+  qfeRow3.className = 'qfe-row-3 compass-info-item';
+  qfeRow3.innerHTML = `
+    <div class="section-label" style="visibility:hidden">QFE</div>
+    <div class="data-field">-</div>
+    <div class="units">inHg</div>
+  `;
+  compassInfo.appendChild(qfeRow3);
+
+  const spacer = document.createElement('div');
+  spacer.className = 'compass-spacer';
+  compassInfo.appendChild(spacer);
 
   const runwayStateRow = document.createElement('div');
   runwayStateRow.className = 'runway-state-row';
@@ -2273,37 +2280,38 @@ function updateQFEDisplay(qfeId, qfeValue, elevation, compassIndex) {
 
   const qfePressure = convertPressure(qfeValue);
 
-  let qfeRow = compassInfo.querySelector('.qfe-row');
-  if (!qfeRow) {
-    qfeRow = document.createElement('div');
-    qfeRow.className = 'qfe-row';
-    const elevRow = compassInfo.querySelector('.elev-row');
-    if (elevRow) {
-      elevRow.after(qfeRow);
-    } else {
-      compassInfo.appendChild(qfeRow);
-    }
-  }
-
-  qfeRow.innerHTML = `
-    <div class="qfe-fields">
-      <div class="qfe-field primary compass-info-item">
-        <div class="section-label">QFE</div>
-        <div class="data-field">${qfePressure.hpa}</div>
-        <div class="units">hPa</div>
-      </div>
-      <div class="qfe-field secondary compass-info-item">
-        <div class="section-label" style="visibility:hidden">QFE</div>
-        <div class="data-field">${qfePressure.mmhg}</div>
-        <div class="units">mmHg</div>
-      </div>
-      <div class="qfe-field secondary compass-info-item">
-        <div class="section-label" style="visibility:hidden">QFE</div>
-        <div class="data-field">${qfePressure.inhg}</div>
-        <div class="units">inHg</div>
-      </div>
-    </div>
+  const qfeRow1 = compassInfo.querySelector('.qfe-row-1') || document.createElement('div');
+  qfeRow1.className = 'qfe-row-1 compass-info-item';
+  qfeRow1.innerHTML = `
+    <div class="section-label">QFE</div>
+    <div class="data-field">${qfePressure.hpa}</div>
+    <div class="units">hPa</div>
   `;
+
+  const qfeRow2 = compassInfo.querySelector('.qfe-row-2') || document.createElement('div');
+  qfeRow2.className = 'qfe-row-2 compass-info-item';
+  qfeRow2.innerHTML = `
+    <div class="section-label" style="visibility:hidden">QFE</div>
+    <div class="data-field">${qfePressure.mmhg}</div>
+    <div class="units">mmHg</div>
+  `;
+
+  const qfeRow3 = compassInfo.querySelector('.qfe-row-3') || document.createElement('div');
+  qfeRow3.className = 'qfe-row-3 compass-info-item';
+  qfeRow3.innerHTML = `
+    <div class="section-label" style="visibility:hidden">QFE</div>
+    <div class="data-field">${qfePressure.inhg}</div>
+    <div class="units">inHg</div>
+  `;
+
+  if (!compassInfo.contains(qfeRow1)) compassInfo.appendChild(qfeRow1);
+  if (!compassInfo.contains(qfeRow2)) compassInfo.appendChild(qfeRow2);
+  if (!compassInfo.contains(qfeRow3)) compassInfo.appendChild(qfeRow3);
+  if (!compassInfo.querySelector('.compass-spacer')) {
+    const spacer = document.createElement('div');
+    spacer.className = 'compass-spacer';
+    compassInfo.appendChild(spacer);
+  }
 
   let elevRow = compassInfo.querySelector('.elev-row');
   if (!elevRow) {
@@ -2313,7 +2321,12 @@ function updateQFEDisplay(qfeId, qfeValue, elevation, compassIndex) {
     if (rvrRow) {
       rvrRow.after(elevRow);
     } else {
-      compassInfo.insertBefore(elevRow, qfeRow);
+      const firstQfeRow = compassInfo.querySelector('.qfe-row-1');
+      if (firstQfeRow) {
+        compassInfo.insertBefore(elevRow, firstQfeRow);
+      } else {
+        compassInfo.appendChild(elevRow);
+      }
     }
   }
 
