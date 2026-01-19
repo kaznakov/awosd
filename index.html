@@ -173,7 +173,7 @@ select:focus,input:focus{
 .pressure-secondary{font-weight:normal!important}
 
 /* ========== КОМПАС - БАЗОВЫЕ СТИЛИ ========== */
-.compass-container{position:relative;width:80%;aspect-ratio:1;margin:0 auto clamp(24px,4vh,80px) auto;flex-shrink:0;margin-top:clamp(12px,2.6vh,30px);overflow:visible}
+.compass-container{position:relative;width:clamp(220px,28vw,360px);aspect-ratio:1;margin:0 auto clamp(16px,2.6vh,36px) auto;flex-shrink:0;margin-top:clamp(8px,2vh,20px);overflow:visible}
 .compass{position:relative;width:100%;height:100%;border:2px solid rgba(15,23,42,.5);border-radius:50%;background:radial-gradient(circle,#ffffff 0%,#eef2f7 100%);overflow:visible;box-shadow:inset 0 2px 8px rgba(15,23,42,.1)}
 .dark .compass{border-color:rgba(148,163,184,.5);background:radial-gradient(circle,#1f2937 0%,#111827 100%)}
 .compass-mark{position:absolute;background:rgba(15,23,42,.7)}
@@ -213,11 +213,11 @@ select:focus,input:focus{
 .dark .runway-display.right-landing::after{border-right-color:#ccc}
 
 /* ========== КОМПОНЕНТЫ ВЕТРА ========== */
-.lateral-component,.headwind-component{position:absolute;top:-30px;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:max(50px,5vw);text-align:center;box-shadow:var(--shadow-soft)}
-.lateral-component{left:-45px}
-.headwind-component{right:-45px}
+.lateral-component,.headwind-component{position:absolute;top:0;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,6vw,80px);text-align:center;box-shadow:var(--shadow-soft);transform:translateY(-35%)}
+.lateral-component{left:0}
+.headwind-component{right:0}
 .lateral-component .data-label,.headwind-component .data-label{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:2px;background:transparent;font-size:clamp(8px,0.8vw,10px)}
-.friction-coefficient{position:absolute;bottom:-30px;right:-45px;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:max(50px,5vw);text-align:center;box-shadow:var(--shadow-soft)}
+.friction-coefficient{position:absolute;bottom:0;right:0;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,6vw,80px);text-align:center;box-shadow:var(--shadow-soft);transform:translateY(35%)}
 .friction-coefficient .data-label{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:2px;background:transparent;font-size:clamp(8px,0.8vw,10px)}
 .dark .lateral-component,.dark .headwind-component,.dark .friction-coefficient{background:rgba(148,163,184,.15);color:var(--muted)}
 
@@ -227,15 +227,15 @@ select:focus,input:focus{
 /* Базовые стили для всех элементов compass-info */
 .compass-info-item{
   display:grid;
-  grid-template-columns:minmax(36px,1fr) auto minmax(30px,1fr);
+  grid-template-columns:minmax(36px,1fr) auto minmax(34px,1fr);
   align-items:center;
   column-gap:min(6px,.6vw);
   padding:min(6px,.6vw) min(8px,.8vw);
   border-radius:4px;
 }
-.compass-info-item .section-label,.compass-info-item .state-label,.compass-info-item .qfe-label{color:var(--text);font-size:clamp(11px,1.1vw,14px);font-weight:bold;min-width:35px;text-align:right}
+.compass-info-item .section-label,.compass-info-item .state-label,.compass-info-item .qfe-label{color:var(--text);font-size:clamp(11px,1.1vw,14px);font-weight:bold;min-width:35px;text-align:left}
 .dark .compass-info-item .section-label,.dark .compass-info-item .state-label,.dark .compass-info-item .qfe-label{color:var(--text)}
-.compass-info-item .data-field,.compass-info-item .state-value{background:rgba(148,163,184,.12);padding:min(4px,.4vw) min(8px,.8vw);border-radius:6px;text-align:center;width:60px}
+.compass-info-item .data-field,.compass-info-item .state-value{background:rgba(148,163,184,.12);padding:min(4px,.4vw) min(8px,.8vw);border-radius:6px;text-align:center;width:clamp(52px,7vw,88px)}
 .dark .compass-info-item .data-field,.dark .compass-info-item .state-value{background:rgba(148,163,184,.12);color:var(--text)}
 .compass-info-item .units{color:var(--muted);font-size:clamp(11px,1.1vw,14px);text-align:left}
 .dark .compass-info-item .units{color:var(--muted)}
@@ -248,10 +248,10 @@ select:focus,input:focus{
 /* QFE - центральная колонка */
 .qfe-row{grid-column:2;grid-row:1 / span 3;flex-direction:column;align-items:center;gap:min(3px,.3vw);padding:min(8px,.8vw);align-self:stretch}
 .qfe-row .qfe-fields{display:flex;flex-direction:column;gap:min(3px,.3vw)}
-.qfe-row .qfe-field{display:flex;flex-direction:row;align-items:center;gap:min(6px,.6vw)}
-.qfe-row .qfe-field .data-field{background:rgba(148,163,184,.12);padding:min(4px,.4vw) min(8px,.8vw);border-radius:6px;text-align:center;width:60px}
+.qfe-row .qfe-field{display:grid;grid-template-columns:minmax(36px,1fr) auto minmax(34px,1fr);align-items:center;column-gap:min(6px,.6vw)}
+.qfe-row .qfe-field .data-field{background:rgba(148,163,184,.12);padding:min(4px,.4vw) min(8px,.8vw);border-radius:6px;text-align:center;width:clamp(52px,7vw,88px)}
 .dark .qfe-row .qfe-field .data-field{background:rgba(148,163,184,.12);color:var(--text)}
-.qfe-row .qfe-field .units{color:var(--muted);font-size:clamp(11px,1.1vw,14px);min-width:45px;text-align:left}
+.qfe-row .qfe-field .units{color:var(--muted);font-size:clamp(11px,1.1vw,14px);text-align:left}
 .dark .qfe-row .qfe-field .units{color:var(--muted)}
 .qfe-row .qfe-field.primary .data-field{font-size:clamp(13px,1.3vw,17px);font-weight:bold}
 .qfe-row .qfe-field.secondary .data-field{font-size:clamp(11px,1.1vw,14px);font-weight:normal}
@@ -338,7 +338,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.28-beta</div>
+<div class="version">v1.0.29-beta</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
