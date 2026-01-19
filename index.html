@@ -252,8 +252,8 @@ select:focus,input:focus{
 
 /* RWY STATE - правая колонка */
 .runway-state-row{grid-column:3;grid-row:1 / span 3;flex-direction:column;align-items:center;gap:min(3px,.3vw);padding:min(8px,.8vw);height:100%;justify-content:space-between;align-self:end}
-.runway-state-item{display:flex;flex-direction:row;align-items:center;gap:min(6px,.6vw)}
-.runway-state-item .state-label{color:var(--text);font-size:clamp(11px,1.1vw,14px);font-weight:bold;min-width:35px}
+.runway-state-item{display:flex;flex-direction:row;align-items:center;gap:min(6px,.6vw);white-space:nowrap}
+.runway-state-item .state-label{color:var(--text);font-size:clamp(11px,1.1vw,14px);font-weight:bold;min-width:35px;white-space:nowrap}
 .dark .runway-state-item .state-label{color:var(--text)}
 .runway-state-item .state-value{background:rgba(148,163,184,.12);padding:min(4px,.4vw) min(8px,.8vw);border-radius:6px;font-size:clamp(11px,1.1vw,14px);text-align:center;width:60px;flex:1}
 .dark .runway-state-item .state-value{background:rgba(148,163,184,.12);color:var(--text)}
