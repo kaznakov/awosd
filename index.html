@@ -173,8 +173,8 @@ select:focus,input:focus{
 .pressure-secondary{font-weight:normal!important}
 
 /* ========== КОМПАС - БАЗОВЫЕ СТИЛИ ========== */
-.compass-container{position:relative;width:clamp(220px,28vw,360px);aspect-ratio:1;margin:0 auto clamp(16px,2.6vh,36px) auto;flex-shrink:0;margin-top:clamp(8px,2vh,20px);overflow:visible}
-.compass{position:relative;width:100%;height:100%;border:2px solid rgba(15,23,42,.5);border-radius:50%;background:radial-gradient(circle,#ffffff 0%,#eef2f7 100%);overflow:visible;box-shadow:inset 0 2px 8px rgba(15,23,42,.1)}
+.compass-container{position:relative;width:100%;aspect-ratio:1;margin:0 auto clamp(12px,2vh,24px) auto;flex-shrink:0;margin-top:clamp(6px,1.6vh,16px);padding-inline:clamp(10px,2vw,16px);overflow:visible}
+.compass{position:relative;width:min(100%,320px);height:auto;aspect-ratio:1;margin:0 auto;border:2px solid rgba(15,23,42,.5);border-radius:50%;background:radial-gradient(circle,#ffffff 0%,#eef2f7 100%);overflow:visible;box-shadow:inset 0 2px 8px rgba(15,23,42,.1)}
 .dark .compass{border-color:rgba(148,163,184,.5);background:radial-gradient(circle,#1f2937 0%,#111827 100%)}
 .compass-mark{position:absolute;background:rgba(15,23,42,.7)}
 .compass-mark.minor{width:1px;height:12px}
@@ -213,16 +213,16 @@ select:focus,input:focus{
 .dark .runway-display.right-landing::after{border-right-color:#ccc}
 
 /* ========== КОМПОНЕНТЫ ВЕТРА ========== */
-.lateral-component,.headwind-component{position:absolute;top:0;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,6vw,80px);text-align:center;box-shadow:var(--shadow-soft);transform:translateY(-35%)}
+.lateral-component,.headwind-component{position:absolute;top:0;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,6vw,80px);text-align:center;box-shadow:var(--shadow-soft);transform:translateY(-40%)}
 .lateral-component{left:0}
 .headwind-component{right:0}
 .lateral-component .data-label,.headwind-component .data-label{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:2px;background:transparent;font-size:clamp(8px,0.8vw,10px)}
-.friction-coefficient{position:absolute;bottom:0;right:0;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,6vw,80px);text-align:center;box-shadow:var(--shadow-soft);transform:translateY(35%)}
+.friction-coefficient{position:absolute;bottom:0;right:0;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,6vw,80px);text-align:center;box-shadow:var(--shadow-soft);transform:translateY(40%)}
 .friction-coefficient .data-label{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:2px;background:transparent;font-size:clamp(8px,0.8vw,10px)}
 .dark .lateral-component,.dark .headwind-component,.dark .friction-coefficient{background:rgba(148,163,184,.15);color:var(--muted)}
 
 /* ========== COMPASS-INFO ========== */
-.compass-info{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);grid-template-rows:repeat(3,auto);column-gap:min(6px,0.6vw);row-gap:0;margin-top:auto;font-size:clamp(10px,1vw,13px);width:100%}
+.compass-info{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);grid-template-rows:repeat(3,auto);column-gap:min(6px,0.6vw);row-gap:0;margin-top:auto;font-size:clamp(10px,1vw,13px);width:100%;padding-inline:clamp(10px,2vw,16px)}
 
 /* Базовые стили для всех элементов compass-info */
 .compass-info-item{
@@ -338,7 +338,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.29-beta</div>
+<div class="version">v1.0.30-beta</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
