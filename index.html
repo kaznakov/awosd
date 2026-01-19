@@ -225,12 +225,19 @@ select:focus,input:focus{
 .compass-info{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);grid-template-rows:repeat(3,auto);column-gap:min(6px,0.6vw);row-gap:0;margin-top:auto;font-size:clamp(10px,1vw,13px);width:100%}
 
 /* Базовые стили для всех элементов compass-info */
-.compass-info-item{display:flex;align-items:center;padding:min(6px,.6vw) min(8px,.8vw);border-radius:4px}
-.compass-info-item .section-label,.compass-info-item .state-label,.compass-info-item .qfe-label{color:var(--text);font-size:clamp(11px,1.1vw,14px);font-weight:bold;min-width:35px}
+.compass-info-item{
+  display:grid;
+  grid-template-columns:minmax(36px,1fr) auto minmax(30px,1fr);
+  align-items:center;
+  column-gap:min(6px,.6vw);
+  padding:min(6px,.6vw) min(8px,.8vw);
+  border-radius:4px;
+}
+.compass-info-item .section-label,.compass-info-item .state-label,.compass-info-item .qfe-label{color:var(--text);font-size:clamp(11px,1.1vw,14px);font-weight:bold;min-width:35px;text-align:right}
 .dark .compass-info-item .section-label,.dark .compass-info-item .state-label,.dark .compass-info-item .qfe-label{color:var(--text)}
-.compass-info-item .data-field,.compass-info-item .state-value{background:rgba(148,163,184,.12);padding:min(4px,.4vw) min(8px,.8vw);border-radius:6px;text-align:center;width:60px;flex:1}
+.compass-info-item .data-field,.compass-info-item .state-value{background:rgba(148,163,184,.12);padding:min(4px,.4vw) min(8px,.8vw);border-radius:6px;text-align:center;width:60px}
 .dark .compass-info-item .data-field,.dark .compass-info-item .state-value{background:rgba(148,163,184,.12);color:var(--text)}
-.compass-info-item .units{color:var(--muted);font-size:clamp(11px,1.1vw,14px)}
+.compass-info-item .units{color:var(--muted);font-size:clamp(11px,1.1vw,14px);text-align:left}
 .dark .compass-info-item .units{color:var(--muted)}
 
 /* RVR и ELEV - левая колонка */
@@ -251,7 +258,7 @@ select:focus,input:focus{
 
 /* RWY STATE - правая колонка */
 .runway-state-row{grid-column:3;grid-row:1 / span 3;flex-direction:column;align-items:center;gap:0;padding:min(8px,.8vw);height:100%;justify-content:space-between;align-self:end;width:100%}
-.runway-state-item{display:flex;flex-direction:row;align-items:center;gap:min(6px,.6vw);white-space:nowrap;width:100%}
+.runway-state-item{white-space:nowrap;width:100%}
 .runway-state-item .state-value{font-weight:normal}
 .runway-state-item.surface .data-field{font-weight:bold}
 .runway-state-item.friction{display:none}
@@ -331,7 +338,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.27-beta</div>
+<div class="version">v1.0.28-beta</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
