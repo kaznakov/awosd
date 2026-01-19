@@ -222,7 +222,7 @@ select:focus,input:focus{
 .dark .lateral-component,.dark .headwind-component,.dark .friction-coefficient{background:rgba(148,163,184,.15);color:var(--muted)}
 
 /* ========== COMPASS-INFO ========== */
-.compass-info{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,auto);column-gap:min(6px,0.6vw);row-gap:0;margin-top:auto;font-size:clamp(10px,1vw,13px);width:100%;padding-inline:clamp(10px,2vw,16px)}
+.compass-info{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,auto);column-gap:min(6px,0.6vw);row-gap:0;margin-top:auto;font-size:clamp(10px,1vw,13px);width:100%;padding-inline:clamp(10px,2vw,16px);position:relative}
 
 /* Базовые стили для всех элементов compass-info */
 .compass-info-item{
@@ -257,6 +257,7 @@ select:focus,input:focus{
 .runway-state-item.surface{grid-column:3;grid-row:1}
 .runway-state-item.contamination{grid-column:3;grid-row:2}
 .runway-state-item.depth{grid-column:3;grid-row:3}
+.runway-state-row{display:contents}
 .runway-state-item{white-space:nowrap;width:100%}
 .runway-state-item .state-value{font-weight:normal}
 .runway-state-item.surface .data-field{font-weight:bold}
@@ -337,7 +338,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.31-beta</div>
+<div class="version">v1.0.32-beta</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
