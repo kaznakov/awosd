@@ -227,7 +227,7 @@ select:focus,input:focus{
 /* Базовые стили для всех элементов compass-info */
 .compass-info-item{
   display:grid;
-  grid-template-columns:minmax(36px,auto) minmax(100px,1.8fr) minmax(32px,auto);
+  grid-template-columns:minmax(0,1fr) minmax(0,2fr) minmax(0,1fr);
   align-items:center;
   column-gap:min(6px,.6vw);
   padding:min(6px,.6vw) min(8px,.8vw);
@@ -236,7 +236,18 @@ select:focus,input:focus{
 }
 .compass-info-item .section-label,.compass-info-item .state-label,.compass-info-item .qfe-label{color:var(--text);font-size:clamp(11px,1.1vw,14px);font-weight:bold;min-width:35px;text-align:left}
 .dark .compass-info-item .section-label,.dark .compass-info-item .state-label,.dark .compass-info-item .qfe-label{color:var(--text)}
-.compass-info-item .data-field,.compass-info-item .state-value{background:rgba(148,163,184,.12);padding:min(4px,.4vw) min(8px,.8vw);border-radius:6px;text-align:center;width:100%;min-width:0;min-height:26px;display:flex;align-items:center;justify-content:center}
+.compass-info-item .data-field,.compass-info-item .state-value{background:rgba(148,163,184,.12);padding:min(4px,.4vw) min(8px,.8vw);border-radius:6px;text-align:center;width:100%;max-width:clamp(110px,12vw,160px);min-width:0;min-height:26px;display:flex;align-items:center;justify-content:center}
+.compass-info-item .section-label,
+.compass-info-item .units{
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.compass-info-item .data-field,
+.compass-info-item .state-value{
+  min-width:0;
+}
 .dark .compass-info-item .data-field,.dark .compass-info-item .state-value{background:rgba(148,163,184,.12);color:var(--text)}
 .compass-info-item .units{color:var(--muted);font-size:clamp(11px,1.1vw,14px);text-align:left}
 .dark .compass-info-item .units{color:var(--muted)}
@@ -339,7 +350,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.41-beta</div>
+<div class="version">v1.0.43-beta</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
