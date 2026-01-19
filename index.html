@@ -119,15 +119,15 @@ select:focus,input:focus{
 .csv-info{font-size:12px;color:#ccc;margin-top:10px}
 
 /* ========== ЦЕНТРАЛЬНЫЙ БЛОК ========== */
-.block-1{display:flex;flex-direction:column;align-items:center;text-align:center;gap:min(2px,.2vh);font-size:clamp(16px,1.6vw,22px);padding:min(6px,.6vw);overflow-y:auto}
+.block-1{display:flex;flex-direction:column;align-items:center;text-align:center;gap:clamp(1px,.2vh,6px);font-size:clamp(14px,1.4vw,22px);padding:min(6px,.6vw);overflow:hidden}
 .block-1 *{font-size:inherit!important}
 .icao-section{text-align:center;margin-bottom:min(4px,.4vh)}
 .block-1 .icao-input{text-align:center;width:clamp(140px,16vw,200px);font-size:clamp(16px,1.6vw,22px);height:clamp(28px,3vh,35px)}
-.weather-data{display:flex;flex-direction:column;align-items:center;flex:1;gap:min(2px,.2vh);margin-top:min(20px,2vh)}
+.weather-data{display:flex;flex-direction:column;align-items:center;flex:1;gap:clamp(2px,.4vh,10px);margin-top:clamp(6px,1.2vh,20px)}
 .weather-data>*{margin-bottom:0;flex-shrink:0}
 
 /* ========== ВРЕМЯ И ВОСХОД/ЗАХОД ========== */
-.sunrise-sunset-row{display:flex;gap:min(6px,.6vw);align-items:center;margin-bottom:min(24px,2.4vh)}
+.sunrise-sunset-row{display:flex;gap:min(6px,.6vw);align-items:center;margin-bottom:clamp(8px,1.6vh,24px)}
 .sunrise-sunset-item{display:flex;flex-direction:column;align-items:center;gap:1px}
 .sunrise-sunset-item .section-label{font-size:clamp(11px,1.1vw,14px)!important}
 .sunrise-sunset-item .data-field{width:clamp(72px,7.2vw,104px);font-size:clamp(13px,1.3vw,18px)!important}
@@ -146,7 +146,7 @@ select:focus,input:focus{
 .weather-row.pressure-row .data-field{font-size:clamp(10px,1.0vw,13px)!important}
 .weather-row.pressure-row .units{font-size:clamp(10px,1.0vw,13px)!important}
 .weather-row.pressure-row .data-value{font-size:clamp(11px,1.1vw,14px)!important}
-.weather-row:nth-child(6){margin-bottom:min(24px,2.4vh)!important}
+.weather-row:nth-child(6){margin-bottom:clamp(10px,2vh,24px)!important}
 
 /* ========== БЛОКИ ЯВЛЕНИЙ И ОБЛАЧНОСТИ ========== */
 .weather-phenomena-block,.cloudiness-block,.special-conditions-block{width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;margin:min(8px,.8vh) 0}
@@ -155,10 +155,10 @@ select:focus,input:focus{
 .weather-phenomena-block .data-value,.cloudiness-block .data-value,.special-conditions-block .data-value{font-weight:normal!important;font-size:clamp(13px,1.3vw,18px)!important}
 
 /* Отступы */
-.weather-phenomena-block{margin-top:min(24px,2.4vh)}
-.cloudiness-block{margin-top:min(24px,2.4vh)}
+.weather-phenomena-block{margin-top:clamp(10px,2vh,24px)}
+.cloudiness-block{margin-top:clamp(10px,2vh,24px)}
 .weather-row:has(+ .weather-phenomena-block){margin-bottom:0}
-.weather-phenomena-block+.weather-row{margin-top:min(24px,2.4vh)}
+.weather-phenomena-block+.weather-row{margin-top:clamp(10px,2vh,24px)}
 
 /* ========== ОБЩИЕ СТИЛИ ДАННЫХ ========== */
 .block-1 .section-label{color:var(--muted);margin-bottom:1px;font-size:clamp(14px,1.4vw,18px);text-align:center}
@@ -173,7 +173,7 @@ select:focus,input:focus{
 .pressure-secondary{font-weight:normal!important}
 
 /* ========== КОМПАС - БАЗОВЫЕ СТИЛИ ========== */
-.compass-container{position:relative;width:80%;aspect-ratio:1;margin:0 auto 80px auto;flex-shrink:0;margin-top:min(30px,3vh);overflow:visible}
+.compass-container{position:relative;width:80%;aspect-ratio:1;margin:0 auto clamp(24px,4vh,80px) auto;flex-shrink:0;margin-top:clamp(12px,2.6vh,30px);overflow:visible}
 .compass{position:relative;width:100%;height:100%;border:2px solid rgba(15,23,42,.5);border-radius:50%;background:radial-gradient(circle,#ffffff 0%,#eef2f7 100%);overflow:visible;box-shadow:inset 0 2px 8px rgba(15,23,42,.1)}
 .dark .compass{border-color:rgba(148,163,184,.5);background:radial-gradient(circle,#1f2937 0%,#111827 100%)}
 .compass-mark{position:absolute;background:rgba(15,23,42,.7)}
@@ -290,6 +290,19 @@ select:focus,input:focus{
     .block{padding:min(6px,1vw)}
     .compass-container{width:70%;margin-bottom:8px}
     .compass-info{grid-template-columns:20% 60% 20%;gap:min(3px,0.3vw)}
+}
+@media (max-height:820px){
+    .block-1{font-size:clamp(13px,1.3vw,20px)}
+    .sunrise-sunset-row{margin-bottom:clamp(6px,1.2vh,16px)}
+    .weather-phenomena-block,.cloudiness-block,.special-conditions-block{margin:clamp(4px,.8vh,12px) 0}
+    .compass-container{margin-bottom:clamp(18px,3vh,50px)}
+}
+@media (max-height:700px){
+    .block-1{font-size:clamp(12px,1.2vw,18px)}
+    .weather-row{margin:clamp(2px,.3vh,6px) 0}
+    .sunrise-sunset-row{margin-bottom:clamp(4px,.8vh,12px)}
+    .weather-phenomena-block .data-field,.cloudiness-block .data-field,.special-conditions-block .data-field{width:clamp(220px,24vw,360px)!important}
+    .compass-container{width:70%;margin-bottom:clamp(14px,2.4vh,40px)}
 }
 </style>
 </head>
