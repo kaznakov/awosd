@@ -229,12 +229,13 @@ select:focus,input:focus{
   display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,2.5fr) minmax(0,1fr);
   align-items:center;
+  justify-items:center;
   column-gap:min(6px,.6vw);
   padding:min(3px,.45vw) min(6px,.6vw);
   border-radius:4px;
   width:100%;
 }
-.compass-info-item .section-label,.compass-info-item .state-label,.compass-info-item .qfe-label{color:var(--text);font-size:clamp(9px,.9vw,12px);font-weight:bold;min-width:27px;text-align:left}
+.compass-info-item .section-label,.compass-info-item .state-label,.compass-info-item .qfe-label{color:var(--text);font-size:clamp(9px,.9vw,12px);font-weight:bold;min-width:27px;text-align:center}
 .dark .compass-info-item .section-label,.dark .compass-info-item .state-label,.dark .compass-info-item .qfe-label{color:var(--text)}
 .compass-info-item .data-field,.compass-info-item .state-value{background:rgba(148,163,184,.12);padding:min(3px,.36vw) min(6px,.6vw);border-radius:6px;text-align:center;width:100%;max-width:clamp(110px,12vw,170px);min-width:0;min-height:22px;display:flex;align-items:center;justify-content:center}
 .compass-info-item .section-label,
@@ -249,7 +250,7 @@ select:focus,input:focus{
   min-width:0;
 }
 .dark .compass-info-item .data-field,.dark .compass-info-item .state-value{background:rgba(148,163,184,.12);color:var(--text)}
-.compass-info-item .units{color:var(--muted);font-size:clamp(9px,.9vw,12px);text-align:left}
+.compass-info-item .units{color:var(--muted);font-size:clamp(9px,.9vw,12px);text-align:center}
 .dark .compass-info-item .units{color:var(--muted)}
 
 /* RVR и ELEV - левая колонка */
@@ -350,7 +351,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.49-beta</div>
+<div class="version">v1.0.50-beta</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
