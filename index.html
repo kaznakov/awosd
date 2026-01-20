@@ -213,13 +213,24 @@ select:focus,input:focus{
 .dark .runway-display.right-landing::after{border-right-color:#ccc}
 
 /* ========== КОМПОНЕНТЫ ВЕТРА ========== */
-.lateral-component,.headwind-component{position:absolute;top:0;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,6vw,80px);text-align:center;box-shadow:var(--shadow-soft);transform:translateY(-40%)}
+.lateral-component,.headwind-component{position:absolute;top:clamp(8px,1.2vw,12px);font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center;box-shadow:var(--shadow-soft);transform:none}
 .lateral-component{left:0}
 .headwind-component{right:0}
 .lateral-component .data-label,.headwind-component .data-label{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:2px;background:transparent;font-size:clamp(8px,0.8vw,10px)}
-.friction-coefficient{position:absolute;bottom:0;right:0;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,6vw,80px);text-align:center;box-shadow:var(--shadow-soft);transform:translateY(40%)}
+.friction-coefficient{position:absolute;bottom:clamp(8px,1.2vw,12px);right:0;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center;box-shadow:var(--shadow-soft);transform:none}
 .friction-coefficient .data-label{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:2px;background:transparent;font-size:clamp(8px,0.8vw,10px)}
 .dark .lateral-component,.dark .headwind-component,.dark .friction-coefficient{background:rgba(148,163,184,.15);color:var(--muted)}
+
+.lateral-component.compass-info-item,
+.headwind-component.compass-info-item,
+.friction-coefficient.compass-info-item{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  column-gap:0;
+  width:clamp(48px,5.2vw,70px);
+  padding:2px 6px;
+}
 
 /* ========== COMPASS-INFO ========== */
 .compass-info{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,auto);column-gap:min(6px,0.6vw);row-gap:0;margin-top:clamp(6px,1vh,12px);margin-left:auto;margin-right:auto;font-size:clamp(8px,.8vw,11px);width:100%;max-width:100%;padding:clamp(4px,.8vw,6px);position:relative;align-self:end;justify-self:center}
@@ -341,7 +352,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.56</div>
+<div class="version">v1.0.57</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
