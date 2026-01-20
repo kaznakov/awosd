@@ -173,8 +173,8 @@ select:focus,input:focus{
 .pressure-secondary{font-weight:normal!important}
 
 /* ========== КОМПАС - БАЗОВЫЕ СТИЛИ ========== */
-.compass-container{position:relative;width:100%;aspect-ratio:1;margin:0 auto clamp(12px,2vh,24px) auto;flex-shrink:0;margin-top:clamp(6px,1.6vh,16px);padding-inline:clamp(4px,.8vw,6px);overflow:visible;box-sizing:border-box}
-.compass{position:relative;width:90%;max-width:90%;height:auto;aspect-ratio:1;margin:0 auto;border:2px solid rgba(15,23,42,.5);border-radius:50%;background:radial-gradient(circle,#ffffff 0%,#eef2f7 100%);overflow:visible;box-shadow:inset 0 2px 8px rgba(15,23,42,.1);box-sizing:border-box}
+.compass-container{position:relative;width:100%;aspect-ratio:1;margin:0 auto clamp(12px,2vh,24px) auto;flex-shrink:0;margin-top:clamp(6px,1.6vh,16px);padding-inline:clamp(4px,.8vw,6px);overflow:visible;box-sizing:border-box;--compass-scale:0.9;--compass-inset:calc((1 - var(--compass-scale)) * 50%)}
+.compass{position:relative;width:calc(100% * var(--compass-scale));max-width:calc(100% * var(--compass-scale));height:auto;aspect-ratio:1;margin:0 auto;border:2px solid rgba(15,23,42,.5);border-radius:50%;background:radial-gradient(circle,#ffffff 0%,#eef2f7 100%);overflow:visible;box-shadow:inset 0 2px 8px rgba(15,23,42,.1);box-sizing:border-box}
 .dark .compass{border-color:rgba(148,163,184,.5);background:radial-gradient(circle,#1f2937 0%,#111827 100%)}
 .compass-mark{position:absolute;background:rgba(15,23,42,.7)}
 .compass-mark.minor{width:1px;height:12px}
@@ -213,11 +213,11 @@ select:focus,input:focus{
 .dark .runway-display.right-landing::after{border-right-color:#ccc}
 
 /* ========== КОМПОНЕНТЫ ВЕТРА ========== */
-.lateral-component,.headwind-component{position:absolute;top:clamp(8px,1.2vw,12px);font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center;box-shadow:var(--shadow-soft);transform:none}
-.lateral-component{left:0}
-.headwind-component{right:0}
+.lateral-component,.headwind-component{position:absolute;top:var(--compass-inset);font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center;box-shadow:var(--shadow-soft);transform:none}
+.lateral-component{left:var(--compass-inset)}
+.headwind-component{right:var(--compass-inset)}
 .lateral-component .data-label,.headwind-component .data-label{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:2px;background:transparent;font-size:clamp(8px,0.8vw,10px)}
-.friction-coefficient{position:absolute;bottom:clamp(8px,1.2vw,12px);right:0;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center;box-shadow:var(--shadow-soft);transform:none}
+.friction-coefficient{position:absolute;bottom:var(--compass-inset);right:var(--compass-inset);font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center;box-shadow:var(--shadow-soft);transform:none}
 .friction-coefficient .data-label{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:2px;background:transparent;font-size:clamp(8px,0.8vw,10px)}
 .dark .lateral-component,.dark .headwind-component,.dark .friction-coefficient{background:rgba(148,163,184,.15);color:var(--muted)}
 
@@ -352,7 +352,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.57</div>
+<div class="version">v1.0.58</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
