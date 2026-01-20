@@ -181,7 +181,7 @@ select:focus,input:focus{
 .compass-mark.minor{width:1px;height:12px}
 .compass-mark.major{width:2px;height:18px}
 .dark .compass-mark{background:rgba(148,163,184,.8)}
-.compass-number{position:absolute;font-size:clamp(12px,1.8vw,20px);font-weight:bold;width:24px;text-align:center;transform:translate(-50%,-50%);line-height:1}
+.compass-number{position:absolute;font-size:clamp(12px,1.8vw,20px);font-weight:bold;width:24px;text-align:center;transform:translate(-50%,-50%);line-height:1;z-index:6}
 
 /* ========== ОТОБРАЖЕНИЕ ВЕТРА ========== */
 .wind-display{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;background:rgba(255,255,255,.9);padding:min(8px,.8vw);border-radius:10px;border:1px solid var(--card-border);min-width:80px;box-shadow:var(--shadow-soft);backdrop-filter:blur(6px)}
@@ -353,7 +353,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.65</div>
+<div class="version">v1.0.66</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -1931,12 +1931,22 @@ const weatherPhenomenaMap = {
 
 function drawCompassBase(compassId) {
   const c = document.getElementById(compassId);
+  const container = c.parentElement;
   c.innerHTML = '';
+  if (container) {
+    container.querySelectorAll('.compass-number').forEach((number) => number.remove());
+  }
 
   const r = c.getBoundingClientRect();
   const s = Math.min(r.width, r.height);
   const rad = s / 2;
   const cx = s / 2, cy = s / 2;
+  const containerWidth = container ? container.clientWidth : s;
+  const containerHeight = container ? container.clientHeight : s;
+  const containerSize = Math.min(containerWidth, containerHeight);
+  const containerRadius = containerSize / 2;
+  const containerCx = containerWidth / 2;
+  const containerCy = containerHeight / 2;
 
   for (let i = 0; i < 36; i++) {
     const a = i * 10;
@@ -1968,12 +1978,22 @@ function drawCompassBase(compassId) {
       const labels = ['36', '03', '06', '09', '12', '15', '18', '21', '24', '27', '30', '33'];
       n.textContent = labels[i / 3];
 
-      const numberRadius = compassCircleRadius;
-      const nx = cx + Math.cos(radian) * numberRadius;
-      const ny = cy + Math.sin(radian) * numberRadius;
-      n.style.left = nx + 'px';
-      n.style.top = ny + 'px';
-      c.appendChild(n);
+      if (container) {
+        container.appendChild(n);
+        const labelHalf = n.offsetWidth / 2;
+        const numberRadius = containerRadius - labelHalf;
+        const nx = containerCx + Math.cos(radian) * numberRadius;
+        const ny = containerCy + Math.sin(radian) * numberRadius;
+        n.style.left = nx + 'px';
+        n.style.top = ny + 'px';
+      } else {
+        c.appendChild(n);
+        const numberRadius = compassCircleRadius;
+        const nx = cx + Math.cos(radian) * numberRadius;
+        const ny = cy + Math.sin(radian) * numberRadius;
+        n.style.left = nx + 'px';
+        n.style.top = ny + 'px';
+      }
     }
   }
 }
