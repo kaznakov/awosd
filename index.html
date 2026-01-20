@@ -180,7 +180,7 @@ select:focus,input:focus{
 .compass-mark.minor{width:1px;height:12px}
 .compass-mark.major{width:2px;height:18px}
 .dark .compass-mark{background:rgba(148,163,184,.8)}
-.compass-number{position:absolute;font-size:clamp(12px,1.8vw,20px);font-weight:bold;width:24px;text-align:center}
+.compass-number{position:absolute;font-size:clamp(12px,1.8vw,20px);font-weight:bold;width:24px;text-align:center;transform:translate(-50%,-50%);line-height:1}
 
 /* ========== ОТОБРАЖЕНИЕ ВЕТРА ========== */
 .wind-display{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;background:rgba(255,255,255,.9);padding:min(8px,.8vw);border-radius:10px;border:1px solid var(--card-border);min-width:80px;box-shadow:var(--shadow-soft);backdrop-filter:blur(6px)}
@@ -352,7 +352,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.58</div>
+<div class="version">v1.0.59</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -1967,11 +1967,11 @@ function drawCompassBase(compassId) {
       const labels = ['36', '03', '06', '09', '12', '15', '18', '21', '24', '27', '30', '33'];
       n.textContent = labels[i / 3];
 
-      const numberRadius = compassCircleRadius + 18;
+      const numberRadius = compassCircleRadius - 6;
       const nx = cx + Math.cos(radian) * numberRadius;
       const ny = cy + Math.sin(radian) * numberRadius;
-      n.style.left = (nx - 12) + 'px';
-      n.style.top = (ny - 8) + 'px';
+      n.style.left = nx + 'px';
+      n.style.top = ny + 'px';
       c.appendChild(n);
     }
   }
