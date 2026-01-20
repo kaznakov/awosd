@@ -1931,6 +1931,7 @@ const weatherPhenomenaMap = {
 
 function drawCompassBase(compassId) {
   const c = document.getElementById(compassId);
+  const container = c.parentElement;
   c.innerHTML = '';
   c.querySelectorAll('.compass-number').forEach((number) => number.remove());
 
@@ -1938,6 +1939,12 @@ function drawCompassBase(compassId) {
   const s = Math.min(r.width, r.height);
   const rad = s / 2;
   const cx = s / 2, cy = s / 2;
+  const containerWidth = container ? container.clientWidth : s;
+  const containerHeight = container ? container.clientHeight : s;
+  const containerSize = Math.min(containerWidth, containerHeight);
+  const containerRadius = containerSize / 2;
+  const containerCx = containerWidth / 2;
+  const containerCy = containerHeight / 2;
 
   for (let i = 0; i < 36; i++) {
     const a = i * 10;
