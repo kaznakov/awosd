@@ -222,33 +222,23 @@ select:focus,input:focus{
 .dark .lateral-component,.dark .headwind-component,.dark .friction-coefficient{background:rgba(148,163,184,.15);color:var(--muted)}
 
 /* ========== COMPASS-INFO ========== */
-.compass-info{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,auto);column-gap:min(6px,0.6vw);row-gap:0;margin-top:auto;margin-left:auto;margin-right:auto;font-size:clamp(8px,.8vw,11px);width:100%;max-width:100%;padding:clamp(10px,1.8vw,16px);position:relative;align-self:end;justify-self:center;background-image:linear-gradient(to right, rgba(59,130,246,.4) 1px, transparent 1px),linear-gradient(to bottom, rgba(59,130,246,.4) 1px, transparent 1px);background-size:calc(100% / 3) calc(100% / 3);background-position:0 0;border:2px solid rgba(59,130,246,.6);border-radius:10px}
+.compass-info{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,auto);column-gap:min(6px,0.6vw);row-gap:0;margin-top:auto;margin-left:auto;margin-right:auto;font-size:clamp(8px,.8vw,11px);width:100%;max-width:100%;padding:clamp(10px,1.8vw,16px);position:relative;align-self:end;justify-self:center}
 
 /* Базовые стили для всех элементов compass-info */
 .compass-info-item{
   display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(0,2.5fr) minmax(0,1fr);
+  grid-template-columns:auto minmax(0,1fr) auto;
   align-items:center;
-  justify-items:center;
+  justify-items:stretch;
   column-gap:min(6px,.6vw);
   padding:min(3px,.45vw) min(6px,.6vw);
   border-radius:4px;
   width:100%;
 }
-.compass-info-item .section-label,.compass-info-item .state-label,.compass-info-item .qfe-label{color:var(--text);font-size:clamp(9px,.9vw,12px);font-weight:bold;min-width:27px;text-align:center}
+.compass-info-item .section-label,.compass-info-item .state-label,.compass-info-item .qfe-label{color:var(--text);font-size:clamp(9px,.9vw,12px);font-weight:bold;min-width:27px;text-align:left;white-space:nowrap}
 .dark .compass-info-item .section-label,.dark .compass-info-item .state-label,.dark .compass-info-item .qfe-label{color:var(--text)}
-.compass-info-item .data-field,.compass-info-item .state-value{background:rgba(148,163,184,.12);padding:min(3px,.36vw) min(6px,.6vw);border-radius:6px;text-align:center;width:100%;max-width:clamp(110px,12vw,170px);min-width:0;min-height:22px;display:flex;align-items:center;justify-content:center}
-.compass-info-item .section-label,
-.compass-info-item .units{
-  max-width:100%;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-.compass-info-item .data-field,
-.compass-info-item .state-value{
-  min-width:0;
-}
+.compass-info-item .data-field,.compass-info-item .state-value{background:rgba(148,163,184,.12);padding:min(3px,.36vw) min(6px,.6vw);border-radius:6px;text-align:center;width:100%;min-width:0;min-height:22px;display:flex;align-items:center;justify-content:center}
+.compass-info-item .units{white-space:nowrap}
 .dark .compass-info-item .data-field,.dark .compass-info-item .state-value{background:rgba(148,163,184,.12);color:var(--text)}
 .compass-info-item .units{color:var(--muted);font-size:clamp(9px,.9vw,12px);text-align:center}
 .dark .compass-info-item .units{color:var(--muted)}
@@ -351,7 +341,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.50-beta</div>
+<div class="version">v1.0.51-beta</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
