@@ -353,7 +353,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.66</div>
+<div class="version">v1.0.67</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -1933,9 +1933,7 @@ function drawCompassBase(compassId) {
   const c = document.getElementById(compassId);
   const container = c.parentElement;
   c.innerHTML = '';
-  if (container) {
-    container.querySelectorAll('.compass-number').forEach((number) => number.remove());
-  }
+  c.querySelectorAll('.compass-number').forEach((number) => number.remove());
 
   const r = c.getBoundingClientRect();
   const s = Math.min(r.width, r.height);
@@ -1978,22 +1976,12 @@ function drawCompassBase(compassId) {
       const labels = ['36', '03', '06', '09', '12', '15', '18', '21', '24', '27', '30', '33'];
       n.textContent = labels[i / 3];
 
-      if (container) {
-        container.appendChild(n);
-        const labelHalf = n.offsetWidth / 2;
-        const numberRadius = containerRadius - labelHalf;
-        const nx = containerCx + Math.cos(radian) * numberRadius;
-        const ny = containerCy + Math.sin(radian) * numberRadius;
-        n.style.left = nx + 'px';
-        n.style.top = ny + 'px';
-      } else {
-        c.appendChild(n);
-        const numberRadius = compassCircleRadius;
-        const nx = cx + Math.cos(radian) * numberRadius;
-        const ny = cy + Math.sin(radian) * numberRadius;
-        n.style.left = nx + 'px';
-        n.style.top = ny + 'px';
-      }
+      c.appendChild(n);
+      const numberRadius = compassCircleRadius;
+      const nx = cx + Math.cos(radian) * numberRadius;
+      const ny = cy + Math.sin(radian) * numberRadius;
+      n.style.left = nx + 'px';
+      n.style.top = ny + 'px';
     }
   }
 }
