@@ -364,7 +364,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.76</div>
+<div class="version">v1.0.77</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -1974,6 +1974,7 @@ function drawCompassBase(compassId) {
   const stageRect = stage ? stage.getBoundingClientRect() : c.getBoundingClientRect();
   const stageSize = Math.min(stageRect.width, stageRect.height);
   const stageRadius = stageSize / 2;
+  const inset = 10;
   let labelHalf = 0;
   if (stage) {
     const probe = document.createElement('div');
@@ -1984,7 +1985,7 @@ function drawCompassBase(compassId) {
     labelHalf = probe.offsetWidth / 2;
     probe.remove();
   }
-  const compassSize = Math.max(stageSize - labelHalf * 2, 0);
+  const compassSize = Math.max(stageSize - (inset + labelHalf) * 2, 0);
   c.style.width = `${compassSize}px`;
   c.style.height = `${compassSize}px`;
 
@@ -2035,7 +2036,7 @@ function drawCompassBase(compassId) {
 
       if (container) {
         container.appendChild(n);
-        const numberRadius = stageRadius - labelHalf;
+        const numberRadius = stageRadius - inset - labelHalf;
         const nx = containerCx + Math.cos(radian) * numberRadius;
         const ny = containerCy + Math.sin(radian) * numberRadius;
         const minX = labelHalf;
