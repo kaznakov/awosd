@@ -108,13 +108,9 @@ select:focus,input:focus{
 .compass-block{padding:0}
 .compass-layout{display:flex;flex-direction:column;align-items:stretch;padding:10px;gap:10px}
 .compass-stage{position:relative;width:100%;aspect-ratio:1;flex:0 0 auto}
-.compass-row{position:absolute;left:0;right:0;display:grid;grid-template-columns:auto 1fr auto;align-items:center;z-index:5}
+.compass-row{position:absolute;left:0;right:0;display:flex;align-items:center;justify-content:space-between;z-index:5}
 .compass-row-top{top:0}
-.compass-row-bottom{bottom:0}
-.compass-boundary-number{font-size:clamp(12px,1.8vw,20px);font-weight:bold;text-align:center}
-.compass-boundary-number.bottom{position:absolute;left:50%;transform:translateX(-50%)}
-.compass-row-top .compass-boundary-number{justify-self:center}
-.compass-row-bottom .compass-boundary-number{justify-self:center}
+.compass-row-bottom{bottom:0;justify-content:flex-end}
 .compass-row-top .lateral-component{justify-self:start}
 .compass-row-top .headwind-component{justify-self:end}
 .compass-row-bottom .friction-coefficient{justify-self:end}
@@ -387,7 +383,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.84</div>
+<div class="version">v1.0.85</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -431,8 +427,6 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="compass-row compass-row-bottom">
-<div></div>
-<div class="compass-boundary-number bottom">18</div>
 <div class="friction-coefficient compass-info-item">
 <div class="data-value">-</div>
 <div class="data-label" id="frictionLabel1">Breaking action</div>
@@ -544,8 +538,6 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="compass-row compass-row-bottom">
-<div></div>
-<div class="compass-boundary-number bottom">18</div>
 <div class="friction-coefficient compass-info-item">
 <div class="data-value">-</div>
 <div class="data-label" id="frictionLabel2">Breaking action</div>
@@ -2013,8 +2005,8 @@ function drawCompassBase(compassId) {
   const baseRadius = Math.max(stageRadius - inset - labelHalf, 0);
   const compassSize = baseRadius * 2;
   const viewSize = compassSize + (labelHalf + inset) * 2;
-  c.style.width = `${compassSize}px`;
-  c.style.height = `${compassSize}px`;
+  c.style.width = `${viewSize}px`;
+  c.style.height = `${viewSize}px`;
 
   const s = viewSize;
   const cx = s / 2, cy = s / 2;
@@ -2061,9 +2053,6 @@ function drawCompassBase(compassId) {
     if (a % 30 === 0) {
       const labels = ['36', '03', '06', '09', '12', '15', '18', '21', '24', '27', '30', '33'];
       const label = labels[i / 3];
-      if (label === '36' || label === '18') {
-        continue;
-      }
       const n = document.createElementNS(svgNS, 'text');
       n.setAttribute('class', 'compass-number');
       n.textContent = label;
