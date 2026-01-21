@@ -95,7 +95,7 @@ select:focus,input:focus{
 .compass-block{padding:0}
 .compass-layout{display:flex;flex-direction:column;align-items:stretch;padding:10px;gap:10px}
 .compass-stage{position:relative;width:100%;aspect-ratio:1;flex:0 0 auto}
-.compass-row{position:absolute;left:0;right:0;display:grid;grid-template-columns:auto 1fr auto;align-items:center;z-index:5}
+.compass-row{position:absolute;left:0;right:0;display:grid;grid-template-columns:1fr auto;align-items:center;z-index:5}
 .compass-row-top{top:0}
 .compass-row-bottom{bottom:0}
 .compass-boundary-number{font-size:clamp(12px,1.8vw,20px);font-weight:bold;text-align:center}
@@ -104,7 +104,7 @@ select:focus,input:focus{
 .compass-row-bottom .compass-boundary-number{justify-self:center}
 .compass-row-top .lateral-component{justify-self:start}
 .compass-row-top .headwind-component{justify-self:end}
-.compass-row-bottom .friction-coefficient{justify-self:end}
+.compass-row-bottom .friction-coefficient{justify-self:end;grid-column:2}
 
 /* ========== СТАТУС ПОДКЛЮЧЕНИЯ ========== */
 .connection-status{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);padding:4px 8px;border-radius:999px;background:rgba(148,163,184,.12)}
@@ -187,7 +187,8 @@ select:focus,input:focus{
 .pressure-secondary{font-weight:normal!important}
 
 /* ========== КОМПАС - БАЗОВЫЕ СТИЛИ ========== */
-.compass-container{position:relative;width:100%;height:100%;margin:0;align-self:stretch;overflow:visible;box-sizing:border-box;--compass-scale:1;--compass-inset:0}
+.compass-container{position:absolute;left:10px;right:10px;top:10px;bottom:10px;margin:0;overflow:visible;box-sizing:border-box;--compass-scale:1;--compass-inset:0}
+.compass-container .compass{position:absolute;inset:0;margin:0}
 .compass{position:relative;width:calc(100% * var(--compass-scale));height:auto;max-width:100%;aspect-ratio:1;margin:0 auto;border:2px solid rgba(15,23,42,.5);border-radius:50%;background:radial-gradient(circle,#ffffff 0%,#eef2f7 100%);overflow:visible;box-shadow:inset 0 2px 8px rgba(15,23,42,.1);box-sizing:border-box}
 .dark .compass{border-color:rgba(148,163,184,.5);background:radial-gradient(circle,#1f2937 0%,#111827 100%)}
 .compass-mark{position:absolute;background:rgba(15,23,42,.7)}
@@ -227,9 +228,9 @@ select:focus,input:focus{
 .dark .runway-display.right-landing::after{border-right-color:#ccc}
 
 /* ========== КОМПОНЕНТЫ ВЕТРА ========== */
-.lateral-component,.headwind-component{position:relative;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center;box-shadow:var(--shadow-soft)}
+.lateral-component,.headwind-component{position:relative;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center}
 .lateral-component .data-label,.headwind-component .data-label{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:2px;background:transparent;font-size:clamp(8px,0.8vw,10px)}
-.friction-coefficient{position:relative;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center;box-shadow:var(--shadow-soft)}
+.friction-coefficient{position:relative;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center}
 .friction-coefficient .data-label{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:2px;background:transparent;font-size:clamp(8px,0.8vw,10px)}
 .dark .lateral-component,.dark .headwind-component,.dark .friction-coefficient{background:rgba(148,163,184,.15);color:var(--muted)}
 
@@ -364,7 +365,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.72</div>
+<div class="version">v1.0.73</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -2015,9 +2016,9 @@ function drawCompassBase(compassId) {
 
       if (container) {
         container.appendChild(n);
-        const numberRadius = containerRadius;
-        const nx = containerCx + Math.cos(radian) * numberRadius;
-        const ny = containerCy + Math.sin(radian) * numberRadius;
+      const numberRadius = containerRadius - 10;
+      const nx = containerCx + Math.cos(radian) * numberRadius;
+      const ny = containerCy + Math.sin(radian) * numberRadius;
         n.style.left = nx + 'px';
         n.style.top = ny + 'px';
       } else {
