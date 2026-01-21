@@ -19,6 +19,9 @@
   --shadow-soft:0 4px 16px rgba(15,23,42,.08);
   --input-bg:#ffffff;
   --input-border:rgba(148,163,184,.6);
+  --compass-gradient-start:#ffffff;
+  --compass-gradient-end:#eef2f7;
+  --compass-ring:rgba(15,23,42,.6);
 }
 body{font-family:'Segoe UI',system-ui,-apple-system,BlinkMacSystemFont,'Inter',sans-serif;background:radial-gradient(circle at top,#ffffff 0%,var(--bg) 45%,var(--bg-alt) 100%);transition:all .3s ease;color:var(--text)}
 body.dark{
@@ -33,6 +36,9 @@ body.dark{
   --shadow-soft:0 8px 18px rgba(0,0,0,.35);
   --input-bg:#111827;
   --input-border:rgba(148,163,184,.4);
+  --compass-gradient-start:#1f2937;
+  --compass-gradient-end:#111827;
+  --compass-ring:rgba(148,163,184,.7);
   background:radial-gradient(circle at top,#1f2937 0%,#111827 55%,#0b1220 100%);
   color:var(--text);
 }
@@ -203,8 +209,7 @@ select:focus,input:focus{
 
 /* ========== КОМПАС - БАЗОВЫЕ СТИЛИ ========== */
 .compass-container{position:absolute;inset:0;margin:0;overflow:visible;box-sizing:border-box;--compass-scale:1;--compass-inset:0}
-.compass{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:0;border-radius:50%;background:radial-gradient(circle,#ffffff 0%,#eef2f7 100%);overflow:visible;box-shadow:none;box-sizing:border-box}
-.dark .compass{background:radial-gradient(circle,#1f2937 0%,#111827 100%)}
+.compass{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:0;border-radius:50%;background:none;overflow:visible;box-shadow:none;box-sizing:border-box;color:var(--text)}
 .compass-mark{position:absolute;background:rgba(15,23,42,.7)}
 .compass-mark.minor{width:1px;height:12px}
 .compass-mark.major{width:2px;height:18px}
@@ -214,6 +219,7 @@ select:focus,input:focus{
 .compass svg .compass-number{position:static;transform:none;width:auto}
 .compass svg .compass-number{fill:currentColor}
 .compass svg .compass-number{dominant-baseline:middle;text-anchor:middle}
+.compass .compass-face{stroke:var(--compass-ring);stroke-width:1.5}
 
 /* ========== ОТОБРАЖЕНИЕ ВЕТРА ========== */
 .wind-display{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;background:rgba(255,255,255,.9);padding:min(8px,.8vw);border-radius:10px;border:1px solid var(--card-border);min-width:80px;box-shadow:var(--shadow-soft);backdrop-filter:blur(6px)}
@@ -2099,6 +2105,35 @@ function drawCompassBase(compassId) {
   svg.setAttribute('width', s);
   svg.setAttribute('height', s);
   c.appendChild(svg);
+
+  const gradientId = `compassGradient-${compassId}`;
+  const defs = document.createElementNS(svgNS, 'defs');
+  const gradient = document.createElementNS(svgNS, 'radialGradient');
+  gradient.setAttribute('id', gradientId);
+  gradient.setAttribute('cx', '50%');
+  gradient.setAttribute('cy', '50%');
+  gradient.setAttribute('r', '50%');
+
+  const gradientStopStart = document.createElementNS(svgNS, 'stop');
+  gradientStopStart.setAttribute('offset', '0%');
+  gradientStopStart.setAttribute('stop-color', 'var(--compass-gradient-start)');
+  gradient.appendChild(gradientStopStart);
+
+  const gradientStopEnd = document.createElementNS(svgNS, 'stop');
+  gradientStopEnd.setAttribute('offset', '100%');
+  gradientStopEnd.setAttribute('stop-color', 'var(--compass-gradient-end)');
+  gradient.appendChild(gradientStopEnd);
+
+  defs.appendChild(gradient);
+  svg.appendChild(defs);
+
+  const circle = document.createElementNS(svgNS, 'circle');
+  circle.setAttribute('class', 'compass-face');
+  circle.setAttribute('cx', cx);
+  circle.setAttribute('cy', cy);
+  circle.setAttribute('r', Math.max(baseRadius, 0));
+  circle.setAttribute('fill', `url(#${gradientId})`);
+  svg.appendChild(circle);
 
   for (let i = 0; i < 36; i++) {
     const a = i * 10;
