@@ -93,13 +93,13 @@ select:focus,input:focus{
 }
 .dark .block{background:var(--card);box-shadow:var(--shadow)}
 .compass-block{padding:0}
-.compass-layout{display:flex;flex-direction:column;align-items:stretch;padding:20px;gap:20px}
+.compass-layout{display:flex;flex-direction:column;align-items:stretch;padding:10px;gap:10px}
 .compass-stage{position:relative;width:100%;aspect-ratio:1;flex:0 0 auto}
 .compass-row{position:absolute;left:0;right:0;display:grid;grid-template-columns:auto 1fr auto;align-items:center;z-index:5}
 .compass-row-top{top:0}
 .compass-row-bottom{bottom:0}
 .compass-boundary-number{font-size:clamp(12px,1.8vw,20px);font-weight:bold;text-align:center}
-.compass-boundary-number.bottom{grid-column:2}
+.compass-boundary-number.bottom{position:absolute;left:50%;transform:translateX(-50%)}
 .compass-row-top .compass-boundary-number{justify-self:center}
 .compass-row-bottom .compass-boundary-number{justify-self:center}
 .compass-row-top .lateral-component{justify-self:start}
@@ -364,7 +364,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.71</div>
+<div class="version">v1.0.72</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -406,7 +406,6 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="compass-row compass-row-bottom">
-<div></div>
 <div class="compass-boundary-number bottom">18</div>
 <div class="friction-coefficient compass-info-item">
 <div class="data-value">-</div>
@@ -519,7 +518,6 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="compass-row compass-row-bottom">
-<div></div>
 <div class="compass-boundary-number bottom">18</div>
 <div class="friction-coefficient compass-info-item">
 <div class="data-value">-</div>
