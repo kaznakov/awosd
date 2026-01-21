@@ -364,7 +364,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.75</div>
+<div class="version">v1.0.76</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -2038,8 +2038,14 @@ function drawCompassBase(compassId) {
         const numberRadius = stageRadius - labelHalf;
         const nx = containerCx + Math.cos(radian) * numberRadius;
         const ny = containerCy + Math.sin(radian) * numberRadius;
-        n.style.left = nx + 'px';
-        n.style.top = ny + 'px';
+        const minX = labelHalf;
+        const maxX = containerWidth - labelHalf;
+        const minY = labelHalf;
+        const maxY = containerHeight - labelHalf;
+        const clampedX = Math.min(Math.max(nx, minX), maxX);
+        const clampedY = Math.min(Math.max(ny, minY), maxY);
+        n.style.left = clampedX + 'px';
+        n.style.top = clampedY + 'px';
       } else {
         c.appendChild(n);
         const numberRadius = compassCircleRadius;
