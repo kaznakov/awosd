@@ -2136,6 +2136,7 @@ function drawCompassBase(compassId) {
   circle.setAttribute('fill', `url(#${gradientId})`);
   svg.appendChild(circle);
 
+  const labelOffset = Math.max(4, baseRadius * 0.03);
   for (let i = 0; i < 36; i++) {
     const a = i * 10;
     const radian = (a - 90) * Math.PI / 180;
@@ -2167,7 +2168,7 @@ function drawCompassBase(compassId) {
       n.setAttribute('class', 'compass-number');
       n.setAttribute('data-label', label);
       n.textContent = label;
-      const numberRadius = baseRadius + labelHalf;
+      const numberRadius = baseRadius + labelHalf + labelOffset;
       const nx = cx + Math.cos(radian) * numberRadius;
       const ny = cy + Math.sin(radian) * numberRadius;
       n.setAttribute('x', nx);
@@ -2175,6 +2176,13 @@ function drawCompassBase(compassId) {
       svg.appendChild(n);
     }
   }
+
+  const labels36 = svg.querySelectorAll('text.compass-number[data-label="36"]');
+  labels36.forEach((labelNode, index) => {
+    if (index > 0) {
+      labelNode.remove();
+    }
+  });
 }
 
 function addRunwayToCompass(compassId, runwayHeading) {
