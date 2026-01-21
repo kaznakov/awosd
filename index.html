@@ -217,7 +217,7 @@ select:focus,input:focus{
 .compass-number{position:absolute;font-size:clamp(12px,1.8vw,20px);font-weight:bold;width:24px;text-align:center;transform:translate(-50%,-50%);line-height:1;z-index:6}
 .compass svg{width:100%;height:100%;display:block;color:var(--text)}
 .compass svg .compass-number{position:static;transform:none;width:auto}
-.compass svg .compass-number{fill:currentColor}
+.compass svg .compass-number{fill:currentColor;font-weight:700;font-size:clamp(12px,1.8vw,20px)}
 .compass svg .compass-number{dominant-baseline:middle;text-anchor:middle}
 .compass .compass-face{stroke:var(--compass-ring);stroke-width:1.5}
 
@@ -2167,7 +2167,7 @@ function drawCompassBase(compassId) {
       n.setAttribute('class', 'compass-number');
       n.setAttribute('data-label', label);
       n.textContent = label;
-      const numberRadius = baseRadiusRaw + labelHalf;
+      const numberRadius = baseRadius + labelHalf;
       const nx = cx + Math.cos(radian) * numberRadius;
       const ny = cy + Math.sin(radian) * numberRadius;
       n.setAttribute('x', nx);
