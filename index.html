@@ -92,6 +92,19 @@ select:focus,input:focus{
   min-height:0;
 }
 .dark .block{background:var(--card);box-shadow:var(--shadow)}
+.compass-block{padding:0}
+.compass-layout{display:flex;flex-direction:column;align-items:stretch;padding:20px;gap:20px}
+.compass-stage{position:relative;width:100%;aspect-ratio:1;flex:0 0 auto}
+.compass-row{position:absolute;left:0;right:0;display:grid;grid-template-columns:auto 1fr auto;align-items:center;z-index:5}
+.compass-row-top{top:0}
+.compass-row-bottom{bottom:0}
+.compass-boundary-number{font-size:clamp(12px,1.8vw,20px);font-weight:bold;text-align:center}
+.compass-boundary-number.bottom{grid-column:2}
+.compass-row-top .compass-boundary-number{justify-self:center}
+.compass-row-bottom .compass-boundary-number{justify-self:center}
+.compass-row-top .lateral-component{justify-self:start}
+.compass-row-top .headwind-component{justify-self:end}
+.compass-row-bottom .friction-coefficient{justify-self:end}
 
 /* ========== СТАТУС ПОДКЛЮЧЕНИЯ ========== */
 .connection-status{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);padding:4px 8px;border-radius:999px;background:rgba(148,163,184,.12)}
@@ -174,7 +187,7 @@ select:focus,input:focus{
 .pressure-secondary{font-weight:normal!important}
 
 /* ========== КОМПАС - БАЗОВЫЕ СТИЛИ ========== */
-.compass-container{position:relative;width:100%;aspect-ratio:1;margin:0;flex:0 0 auto;align-self:stretch;padding:3%;overflow:visible;box-sizing:border-box;--compass-scale:1;--compass-inset:0}
+.compass-container{position:relative;width:100%;height:100%;margin:0;align-self:stretch;overflow:visible;box-sizing:border-box;--compass-scale:1;--compass-inset:0}
 .compass{position:relative;width:calc(100% * var(--compass-scale));height:auto;max-width:100%;aspect-ratio:1;margin:0 auto;border:2px solid rgba(15,23,42,.5);border-radius:50%;background:radial-gradient(circle,#ffffff 0%,#eef2f7 100%);overflow:visible;box-shadow:inset 0 2px 8px rgba(15,23,42,.1);box-sizing:border-box}
 .dark .compass{border-color:rgba(148,163,184,.5);background:radial-gradient(circle,#1f2937 0%,#111827 100%)}
 .compass-mark{position:absolute;background:rgba(15,23,42,.7)}
@@ -214,11 +227,9 @@ select:focus,input:focus{
 .dark .runway-display.right-landing::after{border-right-color:#ccc}
 
 /* ========== КОМПОНЕНТЫ ВЕТРА ========== */
-.lateral-component,.headwind-component{position:absolute;top:var(--compass-inset);font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center;box-shadow:var(--shadow-soft);transform:none}
-.lateral-component{left:var(--compass-inset)}
-.headwind-component{right:var(--compass-inset)}
+.lateral-component,.headwind-component{position:relative;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center;box-shadow:var(--shadow-soft)}
 .lateral-component .data-label,.headwind-component .data-label{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:2px;background:transparent;font-size:clamp(8px,0.8vw,10px)}
-.friction-coefficient{position:absolute;bottom:var(--compass-inset);right:var(--compass-inset);font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center;box-shadow:var(--shadow-soft);transform:none}
+.friction-coefficient{position:relative;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center;box-shadow:var(--shadow-soft)}
 .friction-coefficient .data-label{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:2px;background:transparent;font-size:clamp(8px,0.8vw,10px)}
 .dark .lateral-component,.dark .headwind-component,.dark .friction-coefficient{background:rgba(148,163,184,.15);color:var(--muted)}
 
@@ -234,7 +245,7 @@ select:focus,input:focus{
 }
 
 /* ========== COMPASS-INFO ========== */
-.compass-info{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,auto);column-gap:min(6px,0.6vw);row-gap:0;margin:0;font-size:clamp(8px,.8vw,11px);width:auto;max-width:none;padding:0;position:absolute;left:3%;right:3%;bottom:3%;align-self:stretch;justify-self:stretch}
+.compass-info{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,auto);column-gap:min(6px,0.6vw);row-gap:0;margin:0;font-size:clamp(8px,.8vw,11px);width:100%;max-width:100%;padding:0;position:static}
 
 /* Базовые стили для всех элементов compass-info */
 .compass-info-item{
@@ -288,7 +299,7 @@ select:focus,input:focus{
 .dark .forecast-field .forecast-value{background:#333}
 
 /* ========== СЕЛЕКТОР ВПП ========== */
-.runway-selector{margin-bottom:min(10px,1vh);display:flex;justify-content:center}
+.runway-selector{margin-bottom:0;display:flex;justify-content:center}
 .runway-selector select,.runway-display-label{text-align:center;width:clamp(140px,16vw,200px);font-size:clamp(12px,1.4vw,16px);height:clamp(28px,3vh,35px);padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:white}
 .runway-display-label{display:flex;align-items:center;justify-content:center;font-weight:bold;color:#333}
 .dark .runway-selector select,.dark .runway-display-label{background:#333;border-color:#555;color:white}
@@ -353,7 +364,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.69</div>
+<div class="version">v1.0.71</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -367,25 +378,26 @@ select:focus,input:focus{
 
 <div class="main-layout">
 <!-- Блок компаса 1 -->
-<div class="block">
+<div class="block compass-block">
+<div class="compass-layout">
 <div class="runway-selector">
 <select id="runwaySelect">
 <option value="">Enter ICAO code</option>
 </select>
 </div>
-<div class="compass-container">
+<div class="compass-stage">
+<div class="compass-row compass-row-top">
 <div class="lateral-component compass-info-item">
 <div class="data-value">-</div>
 <div class="data-label" id="lateralLabel1">Side</div>
 </div>
+<div class="compass-boundary-number">36</div>
 <div class="headwind-component compass-info-item">
 <div class="data-value">-</div>
 <div class="data-label" id="headwindLabel1">Head</div>
 </div>
-<div class="friction-coefficient compass-info-item">
-<div class="data-value">-</div>
-<div class="data-label" id="frictionLabel1">Breaking action</div>
 </div>
+<div class="compass-container">
 <div class="compass" id="compass"></div>
 <div class="wind-display">
 <div class="wind-direction">---°</div>
@@ -393,7 +405,17 @@ select:focus,input:focus{
 <div class="wind-unit">kt</div>
 </div>
 </div>
+<div class="compass-row compass-row-bottom">
+<div></div>
+<div class="compass-boundary-number bottom">18</div>
+<div class="friction-coefficient compass-info-item">
+<div class="data-value">-</div>
+<div class="data-label" id="frictionLabel1">Breaking action</div>
+</div>
+</div>
+</div>
 <div class="compass-info"></div>
+</div>
 </div>
 
 <!-- Центральный блок -->
@@ -471,23 +493,24 @@ select:focus,input:focus{
 </div>
 
 <!-- Блок компаса 2 -->
-<div class="block">
+<div class="block compass-block">
+<div class="compass-layout">
 <div class="runway-selector">
 <div class="runway-display-label" id="runwayDisplay2">--</div>
 </div>
-<div class="compass-container">
+<div class="compass-stage">
+<div class="compass-row compass-row-top">
 <div class="lateral-component compass-info-item">
 <div class="data-value">-</div>
 <div class="data-label" id="lateralLabel2">Side</div>
 </div>
+<div class="compass-boundary-number">36</div>
 <div class="headwind-component compass-info-item">
 <div class="data-value">-</div>
 <div class="data-label" id="headwindLabel2">Head</div>
 </div>
-<div class="friction-coefficient compass-info-item">
-<div class="data-value">-</div>
-<div class="data-label" id="frictionLabel2">Breaking action</div>
 </div>
+<div class="compass-container">
 <div class="compass" id="compass2"></div>
 <div class="wind-display">
 <div class="wind-direction">---°</div>
@@ -495,7 +518,17 @@ select:focus,input:focus{
 <div class="wind-unit">kt</div>
 </div>
 </div>
+<div class="compass-row compass-row-bottom">
+<div></div>
+<div class="compass-boundary-number bottom">18</div>
+<div class="friction-coefficient compass-info-item">
+<div class="data-value">-</div>
+<div class="data-label" id="frictionLabel2">Breaking action</div>
+</div>
+</div>
+</div>
 <div class="compass-info"></div>
+</div>
 </div>
 
 <!-- Нижний блок -->
@@ -1973,10 +2006,14 @@ function drawCompassBase(compassId) {
     c.appendChild(m);
 
     if (a % 30 === 0) {
+      const labels = ['36', '03', '06', '09', '12', '15', '18', '21', '24', '27', '30', '33'];
+      const label = labels[i / 3];
+      if (label === '36' || label === '18') {
+        continue;
+      }
       const n = document.createElement('div');
       n.className = 'compass-number';
-      const labels = ['36', '03', '06', '09', '12', '15', '18', '21', '24', '27', '30', '33'];
-      n.textContent = labels[i / 3];
+      n.textContent = label;
 
       if (container) {
         container.appendChild(n);
@@ -2434,7 +2471,8 @@ function updateRunwayStateDisplay(compassIndex) {
   console.log(`✅ Runway state display updated for compass ${compassIndex}`);
 
   // Обновление коэффициента трения в элементе справа от компаса
-  const frictionElement = compassInfo.parentElement.querySelector('.friction-coefficient .data-value');
+  const compassBlock = compassInfo.closest('.block');
+  const frictionElement = compassBlock ? compassBlock.querySelector('.friction-coefficient .data-value') : null;
   if (frictionElement) {
     frictionElement.textContent = runwayState.friction;
     console.log(`✅ Friction coefficient updated: ${runwayState.friction}`);
@@ -2852,8 +2890,9 @@ function updateWindComponents() {
     const runwayHeading = getRunwayHeading(selectedRunway1);
     const components1 = calculateWindComponents(windDir, windSpeed, runwayHeading);
 
-    const lateral1 = document.querySelector('#compass').parentElement.querySelector('.lateral-component .data-value');
-    const headwind1 = document.querySelector('#compass').parentElement.querySelector('.headwind-component .data-value');
+    const compassBlock1 = document.querySelector('#compass')?.closest('.block');
+    const lateral1 = compassBlock1 ? compassBlock1.querySelector('.lateral-component .data-value') : null;
+    const headwind1 = compassBlock1 ? compassBlock1.querySelector('.headwind-component .data-value') : null;
 
     if (lateral1) {
       const value = components1.crosswind;
@@ -2870,8 +2909,9 @@ function updateWindComponents() {
     const runwayHeading = getRunwayHeading(selectedRunway2);
     const components2 = calculateWindComponents(windDir, windSpeed, runwayHeading);
 
-    const lateral2 = document.querySelector('#compass2').parentElement.querySelector('.lateral-component .data-value');
-    const headwind2 = document.querySelector('#compass2').parentElement.querySelector('.headwind-component .data-value');
+    const compassBlock2 = document.querySelector('#compass2')?.closest('.block');
+    const lateral2 = compassBlock2 ? compassBlock2.querySelector('.lateral-component .data-value') : null;
+    const headwind2 = compassBlock2 ? compassBlock2.querySelector('.headwind-component .data-value') : null;
 
     if (lateral2) {
       const value = components2.crosswind;
