@@ -131,7 +131,7 @@ select:focus,input:focus{
 100% { opacity: 1; }
 }
 
-@media (max-width: 800px), (max-height: 600px) {
+@media (max-width: 1400px), (max-height: 700px) {
   .main-layout,
   .bottom-section { display:none !important; }
   .low-resolution { display:flex; }
@@ -383,7 +383,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.85</div>
+<div class="version">v1.0.86</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -2019,15 +2019,6 @@ function drawCompassBase(compassId) {
   svg.setAttribute('width', s);
   svg.setAttribute('height', s);
   c.appendChild(svg);
-
-  const circle = document.createElementNS(svgNS, 'circle');
-  circle.setAttribute('cx', cx);
-  circle.setAttribute('cy', cy);
-  circle.setAttribute('r', Math.max(baseRadius, 0));
-  circle.setAttribute('fill', 'transparent');
-  circle.setAttribute('stroke', 'currentColor');
-  circle.setAttribute('stroke-width', '1.5');
-  svg.appendChild(circle);
 
   for (let i = 0; i < 36; i++) {
     const a = i * 10;
