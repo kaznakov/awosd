@@ -187,9 +187,8 @@ select:focus,input:focus{
 .pressure-secondary{font-weight:normal!important}
 
 /* ========== КОМПАС - БАЗОВЫЕ СТИЛИ ========== */
-.compass-container{position:absolute;left:10px;right:10px;top:10px;bottom:10px;margin:0;overflow:visible;box-sizing:border-box;--compass-scale:1;--compass-inset:0}
-.compass-container .compass{position:absolute;inset:0;margin:0}
-.compass{position:relative;width:calc(100% * var(--compass-scale));height:auto;max-width:100%;aspect-ratio:1;margin:0 auto;border:2px solid rgba(15,23,42,.5);border-radius:50%;background:radial-gradient(circle,#ffffff 0%,#eef2f7 100%);overflow:visible;box-shadow:inset 0 2px 8px rgba(15,23,42,.1);box-sizing:border-box}
+.compass-container{position:absolute;inset:0;margin:0;overflow:visible;box-sizing:border-box;--compass-scale:1;--compass-inset:0}
+.compass{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:2px solid rgba(15,23,42,.5);border-radius:50%;background:radial-gradient(circle,#ffffff 0%,#eef2f7 100%);overflow:visible;box-shadow:inset 0 2px 8px rgba(15,23,42,.1);box-sizing:border-box}
 .dark .compass{border-color:rgba(148,163,184,.5);background:radial-gradient(circle,#1f2937 0%,#111827 100%)}
 .compass-mark{position:absolute;background:rgba(15,23,42,.7)}
 .compass-mark.minor{width:1px;height:12px}
@@ -246,7 +245,7 @@ select:focus,input:focus{
 }
 
 /* ========== COMPASS-INFO ========== */
-.compass-info{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,auto);column-gap:min(6px,0.6vw);row-gap:0;margin:0;font-size:clamp(8px,.8vw,11px);width:100%;max-width:100%;padding:0 10px;position:static}
+.compass-info{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,auto);column-gap:min(6px,0.6vw);row-gap:0;margin:0;font-size:clamp(8px,.8vw,11px);width:100%;max-width:100%;padding:0;position:static}
 
 /* Базовые стили для всех элементов compass-info */
 .compass-info-item{
@@ -365,7 +364,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.74</div>
+<div class="version">v1.0.75</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -1966,10 +1965,28 @@ const weatherPhenomenaMap = {
 function drawCompassBase(compassId) {
   const c = document.getElementById(compassId);
   const container = c.parentElement;
+  const stage = c.closest('.compass-stage');
   c.innerHTML = '';
   if (container) {
     container.querySelectorAll('.compass-number').forEach((number) => number.remove());
   }
+
+  const stageRect = stage ? stage.getBoundingClientRect() : c.getBoundingClientRect();
+  const stageSize = Math.min(stageRect.width, stageRect.height);
+  const stageRadius = stageSize / 2;
+  let labelHalf = 0;
+  if (stage) {
+    const probe = document.createElement('div');
+    probe.className = 'compass-number';
+    probe.textContent = '27';
+    probe.style.visibility = 'hidden';
+    stage.appendChild(probe);
+    labelHalf = probe.offsetWidth / 2;
+    probe.remove();
+  }
+  const compassSize = Math.max(stageSize - labelHalf * 2, 0);
+  c.style.width = `${compassSize}px`;
+  c.style.height = `${compassSize}px`;
 
   const r = c.getBoundingClientRect();
   const s = Math.min(r.width, r.height);
@@ -2018,8 +2035,7 @@ function drawCompassBase(compassId) {
 
       if (container) {
         container.appendChild(n);
-        const labelHalf = n.offsetWidth / 2;
-        const numberRadius = containerRadius - 10 - labelHalf;
+        const numberRadius = stageRadius - labelHalf;
         const nx = containerCx + Math.cos(radian) * numberRadius;
         const ny = containerCy + Math.sin(radian) * numberRadius;
         n.style.left = nx + 'px';
