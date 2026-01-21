@@ -95,7 +95,7 @@ select:focus,input:focus{
 .compass-block{padding:0}
 .compass-layout{display:flex;flex-direction:column;align-items:stretch;padding:10px;gap:10px}
 .compass-stage{position:relative;width:100%;aspect-ratio:1;flex:0 0 auto}
-.compass-row{position:absolute;left:0;right:0;display:grid;grid-template-columns:1fr auto;align-items:center;z-index:5}
+.compass-row{position:absolute;left:0;right:0;display:grid;grid-template-columns:auto 1fr auto;align-items:center;z-index:5}
 .compass-row-top{top:0}
 .compass-row-bottom{bottom:0}
 .compass-boundary-number{font-size:clamp(12px,1.8vw,20px);font-weight:bold;text-align:center}
@@ -104,7 +104,7 @@ select:focus,input:focus{
 .compass-row-bottom .compass-boundary-number{justify-self:center}
 .compass-row-top .lateral-component{justify-self:start}
 .compass-row-top .headwind-component{justify-self:end}
-.compass-row-bottom .friction-coefficient{justify-self:end;grid-column:2}
+.compass-row-bottom .friction-coefficient{justify-self:end}
 
 /* ========== СТАТУС ПОДКЛЮЧЕНИЯ ========== */
 .connection-status{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);padding:4px 8px;border-radius:999px;background:rgba(148,163,184,.12)}
@@ -246,7 +246,7 @@ select:focus,input:focus{
 }
 
 /* ========== COMPASS-INFO ========== */
-.compass-info{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,auto);column-gap:min(6px,0.6vw);row-gap:0;margin:0;font-size:clamp(8px,.8vw,11px);width:100%;max-width:100%;padding:0;position:static}
+.compass-info{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,auto);column-gap:min(6px,0.6vw);row-gap:0;margin:0;font-size:clamp(8px,.8vw,11px);width:100%;max-width:100%;padding:0 10px;position:static}
 
 /* Базовые стили для всех элементов compass-info */
 .compass-info-item{
@@ -365,7 +365,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.73</div>
+<div class="version">v1.0.74</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -407,6 +407,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="compass-row compass-row-bottom">
+<div></div>
 <div class="compass-boundary-number bottom">18</div>
 <div class="friction-coefficient compass-info-item">
 <div class="data-value">-</div>
@@ -519,6 +520,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="compass-row compass-row-bottom">
+<div></div>
 <div class="compass-boundary-number bottom">18</div>
 <div class="friction-coefficient compass-info-item">
 <div class="data-value">-</div>
@@ -2016,9 +2018,10 @@ function drawCompassBase(compassId) {
 
       if (container) {
         container.appendChild(n);
-      const numberRadius = containerRadius - 10;
-      const nx = containerCx + Math.cos(radian) * numberRadius;
-      const ny = containerCy + Math.sin(radian) * numberRadius;
+        const labelHalf = n.offsetWidth / 2;
+        const numberRadius = containerRadius - 10 - labelHalf;
+        const nx = containerCx + Math.cos(radian) * numberRadius;
+        const ny = containerCy + Math.sin(radian) * numberRadius;
         n.style.left = nx + 'px';
         n.style.top = ny + 'px';
       } else {
