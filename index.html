@@ -76,6 +76,19 @@ select:focus,input:focus{
 .dark .header-btn:hover{border-color:rgba(96,165,250,.4)}
 .version{font-size:10px;color:var(--muted);font-weight:bold;padding:4px 8px}
 .dark .version{color:var(--muted)}
+.low-resolution{
+  display:none;
+  width:100%;
+  height:100%;
+  min-height:60vh;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-size:clamp(20px,3vw,32px);
+  font-weight:700;
+  color:var(--text);
+}
+.dark .low-resolution{color:var(--text)}
 
 .main-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,0.85fr) minmax(0,1fr);gap:min(12px,1vw);margin-bottom:min(10px,1vh);flex:1.3;min-height:0;max-width:100%;width:100%}
 .bottom-section{grid-column:1 / -1;flex:0 0 auto;height:clamp(70px,8.4vh,84px);max-width:100%}
@@ -120,6 +133,12 @@ select:focus,input:focus{
 0% { opacity: 1; }
 50% { opacity: 0.5; }
 100% { opacity: 1; }
+}
+
+@media (max-width: 800px), (max-height: 600px) {
+  .main-layout,
+  .bottom-section { display:none !important; }
+  .low-resolution { display:flex; }
 }
 
 /* ========== ИНДИКАТОР ЗАГРУЗКИ CSV ========== */
@@ -364,7 +383,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.77</div>
+<div class="version">v1.0.78</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -375,6 +394,8 @@ select:focus,input:focus{
 </button>
 </div>
 </div>
+
+<div class="low-resolution">Low resolution</div>
 
 <div class="main-layout">
 <!-- Блок компаса 1 -->
