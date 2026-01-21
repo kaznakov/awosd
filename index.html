@@ -135,7 +135,7 @@ select:focus,input:focus{
 100% { opacity: 1; }
 }
 
-@media (max-width: 1280px), (max-height: 800px) {
+@media (max-width: 800px), (max-height: 600px) {
   .main-layout,
   .bottom-section { display:none !important; }
   .low-resolution { display:flex; }
@@ -387,7 +387,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.82</div>
+<div class="version">v1.0.83</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -2031,10 +2031,10 @@ function drawCompassBase(compassId) {
   const circle = document.createElementNS(svgNS, 'circle');
   circle.setAttribute('cx', cx);
   circle.setAttribute('cy', cy);
-  circle.setAttribute('r', Math.max(rad - 2, 0));
+  circle.setAttribute('r', Math.max(rad, 0));
   circle.setAttribute('fill', 'transparent');
   circle.setAttribute('stroke', 'currentColor');
-  circle.setAttribute('stroke-width', '2');
+  circle.setAttribute('stroke-width', '1.5');
   svg.appendChild(circle);
 
   for (let i = 0; i < 36; i++) {
@@ -2043,7 +2043,7 @@ function drawCompassBase(compassId) {
     const maj = i % 3 === 0;
     const ml = maj ? 18 : 12, mw = maj ? 2 : 1;
 
-    const compassCircleRadius = Math.max(rad - 2, 0);
+    const compassCircleRadius = Math.max(rad, 0);
     const outerX = cx + Math.cos(radian) * compassCircleRadius;
     const outerY = cy + Math.sin(radian) * compassCircleRadius;
     const innerX = cx + Math.cos(radian) * (compassCircleRadius - ml);
@@ -2067,7 +2067,7 @@ function drawCompassBase(compassId) {
       const n = document.createElementNS(svgNS, 'text');
       n.setAttribute('class', 'compass-number');
       n.textContent = label;
-      const numberRadius = baseRadius;
+      const numberRadius = baseRadius + labelHalf;
       const nx = cx + Math.cos(radian) * numberRadius;
       const ny = cy + Math.sin(radian) * numberRadius;
       n.setAttribute('x', nx);
