@@ -2088,7 +2088,8 @@ function drawCompassBase(compassId) {
     labelHalf = probe.offsetWidth / 2;
     probe.remove();
   }
-  const baseRadius = Math.max(stageRadius - inset - labelHalf, 0);
+  const baseRadiusRaw = Math.max(stageRadius - inset - labelHalf, 0);
+  const baseRadius = baseRadiusRaw * 0.95;
   const compassSize = baseRadius * 2;
   const viewSize = compassSize + (labelHalf + inset) * 2;
   c.style.width = `${viewSize}px`;
@@ -2135,6 +2136,7 @@ function drawCompassBase(compassId) {
   circle.setAttribute('fill', `url(#${gradientId})`);
   svg.appendChild(circle);
 
+  let has36Label = false;
   for (let i = 0; i < 36; i++) {
     const a = i * 10;
     const radian = (a - 90) * Math.PI / 180;
@@ -2159,10 +2161,16 @@ function drawCompassBase(compassId) {
     if (a % 30 === 0) {
       const labels = ['36', '03', '06', '09', '12', '15', '18', '21', '24', '27', '30', '33'];
       const label = labels[i / 3];
+      if (label === '36') {
+        if (has36Label) {
+          continue;
+        }
+        has36Label = true;
+      }
       const n = document.createElementNS(svgNS, 'text');
       n.setAttribute('class', 'compass-number');
       n.textContent = label;
-      const numberRadius = baseRadius + labelHalf;
+      const numberRadius = baseRadiusRaw + labelHalf;
       const nx = cx + Math.cos(radian) * numberRadius;
       const ny = cy + Math.sin(radian) * numberRadius;
       n.setAttribute('x', nx);
