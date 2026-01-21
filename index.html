@@ -383,7 +383,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.79</div>
+<div class="version">v1.0.81</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -2006,7 +2006,8 @@ function drawCompassBase(compassId) {
     labelHalf = probe.offsetWidth / 2;
     probe.remove();
   }
-  const compassSize = Math.max(stageSize - (inset + labelHalf) * 2, 0);
+  const baseRadius = Math.max(stageRadius - inset - labelHalf, 0);
+  const compassSize = baseRadius * 2;
   c.style.width = `${compassSize}px`;
   c.style.height = `${compassSize}px`;
 
@@ -2029,7 +2030,7 @@ function drawCompassBase(compassId) {
     m.className = maj ? 'compass-mark major' : 'compass-mark minor';
     const ml = maj ? 18 : 12, mw = maj ? 2 : 1;
 
-    const compassCircleRadius = rad - 2;
+    const compassCircleRadius = Math.max(rad - 2, 0);
     const outerX = cx + Math.cos(radian) * compassCircleRadius;
     const outerY = cy + Math.sin(radian) * compassCircleRadius;
     const innerX = cx + Math.cos(radian) * (compassCircleRadius - ml);
@@ -2057,13 +2058,13 @@ function drawCompassBase(compassId) {
 
       if (container) {
         container.appendChild(n);
-        const numberRadius = stageRadius - inset - labelHalf;
+        const numberRadius = baseRadius;
         const nx = containerCx + Math.cos(radian) * numberRadius;
         const ny = containerCy + Math.sin(radian) * numberRadius;
-        const minX = labelHalf;
-        const maxX = containerWidth - labelHalf;
-        const minY = labelHalf;
-        const maxY = containerHeight - labelHalf;
+        const minX = inset + labelHalf;
+        const maxX = containerWidth - inset - labelHalf;
+        const minY = inset + labelHalf;
+        const maxY = containerHeight - inset - labelHalf;
         const clampedX = Math.min(Math.max(nx, minX), maxX);
         const clampedY = Math.min(Math.max(ny, minY), maxY);
         n.style.left = clampedX + 'px';
