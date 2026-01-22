@@ -2150,9 +2150,9 @@ function drawCompassBase(compassId) {
     svg.appendChild(line);
 
     if (a % 30 === 0) {
-      const labels = ['36', '03', '06', '09', '12', '15', '18', '21', '24', '27', '30', '33'];
+      const labels = [null, '03', '06', '09', '12', '15', '18', '21', '24', '27', '30', '33'];
       const label = labels[i / 3];
-      if (label === '36' && i !== 0) {
+      if (!label) {
         continue;
       }
       const n = document.createElementNS(svgNS, 'text');
@@ -2171,18 +2171,6 @@ function drawCompassBase(compassId) {
     }
   }
 
-  svg.querySelectorAll('text.compass-number[data-label="36"]').forEach((labelNode) => {
-    if (labelNode.getAttribute('data-index') !== '0') {
-      labelNode.remove();
-    }
-  });
-  if (stage) {
-    stage.querySelectorAll('.compass-number').forEach((labelNode) => {
-      if (!(labelNode instanceof SVGTextElement) && labelNode.textContent.trim() === '36') {
-        labelNode.remove();
-      }
-    });
-  }
 }
 
 function addRunwayToCompass(compassId, runwayHeading) {
