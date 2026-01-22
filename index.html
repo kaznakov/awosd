@@ -230,8 +230,8 @@ select:focus,input:focus{
 .wind-unit{font-size:clamp(12px,1.2vw,16px);color:#666;cursor:pointer}
 
 /* Стрелка ветра */
-.wind-arrow{position:absolute;width:18px;height:50%;background:#4A90E2;transform-origin:bottom center;z-index:10;opacity:0.5}
-.wind-arrow::after{content:'';position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-bottom:18px solid #4A90E2;opacity:1}
+.wind-arrow{position:absolute;width:18px;background:#4A90E2;transform-origin:top center;z-index:10;opacity:0.5}
+.wind-arrow::after{content:'';position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:12px solid #4A90E2;opacity:1}
 .dark .wind-arrow{background:#6BB6FF}
 .dark .wind-arrow::after{border-top-color:#6BB6FF}
 
@@ -389,7 +389,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.96</div>
+<div class="version">v1.0.97</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -2183,19 +2183,6 @@ function drawCompassBase(compassId) {
       }
     });
   }
-
-  svg.querySelectorAll('text.compass-number[data-label="36"]').forEach((labelNode) => {
-    if (labelNode.getAttribute('data-index') !== '0') {
-      labelNode.remove();
-    }
-  });
-  if (stage) {
-    stage.querySelectorAll('.compass-number').forEach((labelNode) => {
-      if (!(labelNode instanceof SVGTextElement) && labelNode.textContent.trim() === '36') {
-        labelNode.remove();
-      }
-    });
-  }
 }
 
 function addRunwayToCompass(compassId, runwayHeading) {
@@ -2359,6 +2346,7 @@ function addWindToCompass(compassId) {
   const windAngle = currentMetarData.wind.direction;
   const windRad = (windAngle - 90) * Math.PI / 180;
   const compassCircleRadius = rad - 2;
+  const tipLength = 12;
   const arrowStartRadius = compassCircleRadius;
 
   const startX = cx + Math.cos(windRad) * arrowStartRadius;
@@ -2366,6 +2354,7 @@ function addWindToCompass(compassId) {
 
   wa.style.left = startX + 'px';
   wa.style.top = startY + 'px';
+  wa.style.height = `${Math.max(compassCircleRadius - tipLength, 0)}px`;
   wa.style.transform = `translate(-50%, 0) rotate(${windAngle + 180}deg)`;
   c.appendChild(wa);
 }
