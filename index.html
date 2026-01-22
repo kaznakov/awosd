@@ -230,7 +230,7 @@ select:focus,input:focus{
 .wind-unit{font-size:clamp(12px,1.2vw,16px);color:#666;cursor:pointer}
 
 /* Стрелка ветра */
-.wind-arrow{position:absolute;width:22px;background:#4A90E2;transform-origin:top center;z-index:10;opacity:0.5;clip-path:polygon(0 0,100% 0,100% calc(100% - 24px),calc(50% + 12px) calc(100% - 24px),50% 100%,calc(50% - 12px) calc(100% - 24px),0 calc(100% - 24px))}
+.wind-arrow{position:absolute;width:24px;background:#4A90E2;transform-origin:top center;z-index:10;opacity:0.5;clip-path:polygon(0 35%,60% 35%,60% 15%,100% 50%,60% 85%,60% 65%,0 65%)}
 .wind-arrow::after{content:none}
 .dark .wind-arrow{background:#6BB6FF}
 .dark .wind-arrow::after{border-top-color:#6BB6FF}
@@ -389,7 +389,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.1.00</div>
+<div class="version">v1.1.01</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -2169,19 +2169,6 @@ function drawCompassBase(compassId) {
       n.setAttribute('y', ny);
       svg.appendChild(n);
     }
-  }
-
-  svg.querySelectorAll('text.compass-number[data-label="36"]').forEach((labelNode) => {
-    if (labelNode.getAttribute('data-index') !== '0') {
-      labelNode.remove();
-    }
-  });
-  if (stage) {
-    stage.querySelectorAll('.compass-number').forEach((labelNode) => {
-      if (!(labelNode instanceof SVGTextElement) && labelNode.textContent.trim() === '36') {
-        labelNode.remove();
-      }
-    });
   }
 
   svg.querySelectorAll('text.compass-number[data-label="36"]').forEach((labelNode) => {
