@@ -389,7 +389,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.1.02</div>
+<div class="version">v1.1.01</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -2183,19 +2183,6 @@ function drawCompassBase(compassId) {
       }
     });
   }
-
-  svg.querySelectorAll('text.compass-number[data-label="36"]').forEach((labelNode) => {
-    if (labelNode.getAttribute('data-index') !== '0') {
-      labelNode.remove();
-    }
-  });
-  if (stage) {
-    stage.querySelectorAll('.compass-number').forEach((labelNode) => {
-      if (!(labelNode instanceof SVGTextElement) && labelNode.textContent.trim() === '36') {
-        labelNode.remove();
-      }
-    });
-  }
 }
 
 function addRunwayToCompass(compassId, runwayHeading) {
@@ -2368,7 +2355,7 @@ function addWindToCompass(compassId) {
   wa.style.left = startX + 'px';
   wa.style.top = startY + 'px';
   wa.style.height = `${Math.max((compassCircleRadius * 0.7) - tipLength, 0)}px`;
-  wa.style.transform = `translate(-50%, 0) rotate(${windAngle + 90}deg)`;
+  wa.style.transform = `translate(-50%, 0) rotate(${windAngle}deg)`;
   c.appendChild(wa);
 }
 
