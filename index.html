@@ -2169,39 +2169,6 @@ function drawCompassBase(compassId) {
       n.setAttribute('y', ny);
       svg.appendChild(n);
     }
-  });
-  if (stage) {
-    stage.querySelectorAll('.compass-number').forEach((labelNode) => {
-      if (!(labelNode instanceof SVGTextElement) && labelNode.textContent.trim() === '36') {
-        labelNode.remove();
-      }
-    });
-  }
-
-  svg.querySelectorAll('text.compass-number[data-label="36"]').forEach((labelNode) => {
-    if (labelNode.getAttribute('data-index') !== '0') {
-      labelNode.remove();
-    }
-  });
-  if (stage) {
-    stage.querySelectorAll('.compass-number').forEach((labelNode) => {
-      if (!(labelNode instanceof SVGTextElement) && labelNode.textContent.trim() === '36') {
-        labelNode.remove();
-      }
-    });
-  }
-
-  svg.querySelectorAll('text.compass-number[data-label="36"]').forEach((labelNode) => {
-    if (labelNode.getAttribute('data-index') !== '0') {
-      labelNode.remove();
-    }
-  });
-  if (stage) {
-    stage.querySelectorAll('.compass-number').forEach((labelNode) => {
-      if (!(labelNode instanceof SVGTextElement) && labelNode.textContent.trim() === '36') {
-        labelNode.remove();
-      }
-    });
   }
 
   svg.querySelectorAll('text.compass-number[data-label="36"]').forEach((labelNode) => {
