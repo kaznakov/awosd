@@ -2346,7 +2346,7 @@ function addWindToCompass(compassId) {
   const windAngle = currentMetarData.wind.direction;
   const windRad = (windAngle - 90) * Math.PI / 180;
   const compassCircleRadius = rad - 2;
-  const tipLength = 12;
+  const tipLength = 24;
   const arrowStartRadius = compassCircleRadius;
 
   const startX = cx + Math.cos(windRad) * arrowStartRadius;
