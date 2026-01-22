@@ -2092,7 +2092,7 @@ function drawCompassBase(compassId) {
   const baseRadius = baseRadiusRaw * 0.9;
   const labelOffset = Math.max(2, baseRadius * 0.02);
   const labelRadius = baseRadius + labelHalf + labelOffset;
-  const viewPadding = Math.max(4, baseRadius * 0.02);
+  const viewPadding = Math.max(6, baseRadius * 0.03);
   const viewSize = (labelRadius + inset + viewPadding) * 2;
   c.style.width = `${viewSize}px`;
   c.style.height = `${viewSize}px`;
@@ -2169,6 +2169,8 @@ function drawCompassBase(compassId) {
       n.setAttribute('class', 'compass-number');
       n.setAttribute('data-label', label);
       n.setAttribute('data-index', i.toString());
+      n.setAttribute('font-weight', '700');
+      n.setAttribute('font-size', 'clamp(12px,1.8vw,20px)');
       n.textContent = label;
       const numberRadius = labelRadius;
       const nx = cx + Math.cos(radian) * numberRadius;
@@ -2184,6 +2186,13 @@ function drawCompassBase(compassId) {
       labelNode.remove();
     }
   });
+  if (container) {
+    container.querySelectorAll('.compass-number').forEach((labelNode) => {
+      if (!(labelNode instanceof SVGTextElement) && labelNode.textContent.trim() === '36') {
+        labelNode.remove();
+      }
+    });
+  }
 }
 
 function addRunwayToCompass(compassId, runwayHeading) {
