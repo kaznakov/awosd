@@ -2354,7 +2354,7 @@ function addWindToCompass(compassId) {
 
   wa.style.left = startX + 'px';
   wa.style.top = startY + 'px';
-  wa.style.height = `${Math.max((compassCircleRadius * 0.6) - tipLength + 1, 0)}px`;
+  wa.style.height = `${Math.max((compassCircleRadius * 0.69) - tipLength + 1, 0)}px`;
   wa.style.transform = `translate(-50%, 0) rotate(${windAngle}deg)`;
   c.appendChild(wa);
 }
