@@ -403,7 +403,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.87</div>
+<div class="version">v1.0.88</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -2073,6 +2073,9 @@ function drawCompassBase(compassId) {
   if (container) {
     container.querySelectorAll('.compass-number').forEach((number) => number.remove());
   }
+  if (stage) {
+    stage.querySelectorAll('.compass-number').forEach((number) => number.remove());
+  }
 
   const stageRect = stage ? stage.getBoundingClientRect() : c.getBoundingClientRect();
   const stageSize = Math.min(stageRect.width, stageRect.height);
@@ -2186,8 +2189,8 @@ function drawCompassBase(compassId) {
       labelNode.remove();
     }
   });
-  if (container) {
-    container.querySelectorAll('.compass-number').forEach((labelNode) => {
+  if (stage) {
+    stage.querySelectorAll('.compass-number').forEach((labelNode) => {
       if (!(labelNode instanceof SVGTextElement) && labelNode.textContent.trim() === '36') {
         labelNode.remove();
       }
