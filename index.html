@@ -209,7 +209,7 @@ select:focus,input:focus{
 
 /* ========== КОМПАС - БАЗОВЫЕ СТИЛИ ========== */
 .compass-container{position:absolute;inset:0;margin:0;overflow:visible;box-sizing:border-box;--compass-scale:1;--compass-inset:0}
-.compass{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:0;border-radius:50%;background:none;overflow:visible;box-shadow:none;box-sizing:border-box;color:var(--text)}
+.compass{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:0;border-radius:50%;background:none;overflow:visible;box-shadow:none;box-sizing:border-box;color:var(--text);--compass-radius:0px}
 .compass-mark{position:absolute;background:rgba(15,23,42,.7)}
 .compass-mark.minor{width:1px;height:12px}
 .compass-mark.major{width:2px;height:18px}
@@ -389,7 +389,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.95</div>
+<div class="version">v1.0.96</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -2085,6 +2085,7 @@ function drawCompassBase(compassId) {
   const viewSize = (labelRadius + inset + viewPadding) * 2;
   c.style.width = `${viewSize}px`;
   c.style.height = `${viewSize}px`;
+  c.style.setProperty('--compass-radius', `${baseRadius}px`);
 
   const s = viewSize;
   const cx = s / 2, cy = s / 2;
@@ -2168,6 +2169,19 @@ function drawCompassBase(compassId) {
       n.setAttribute('y', ny);
       svg.appendChild(n);
     }
+  }
+
+  svg.querySelectorAll('text.compass-number[data-label="36"]').forEach((labelNode) => {
+    if (labelNode.getAttribute('data-index') !== '0') {
+      labelNode.remove();
+    }
+  });
+  if (stage) {
+    stage.querySelectorAll('.compass-number').forEach((labelNode) => {
+      if (!(labelNode instanceof SVGTextElement) && labelNode.textContent.trim() === '36') {
+        labelNode.remove();
+      }
+    });
   }
 
   svg.querySelectorAll('text.compass-number[data-label="36"]').forEach((labelNode) => {
@@ -2338,7 +2352,8 @@ function addWindToCompass(compassId) {
 
   const r = c.getBoundingClientRect();
   const s = Math.min(r.width, r.height);
-  const rad = s / 2;
+  const cssRadius = parseFloat(getComputedStyle(c).getPropertyValue('--compass-radius')) || 0;
+  const rad = cssRadius > 0 ? cssRadius : (s / 2);
   const cx = s / 2, cy = s / 2;
 
   const windAngle = currentMetarData.wind.direction;
