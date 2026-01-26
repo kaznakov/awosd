@@ -236,7 +236,7 @@ select:focus,input:focus{
 .dark .wind-arrow::after{border-top-color:#6BB6FF}
 
 /* Сектор переменного ветра */
-.wind-sector{position:absolute;top:50%;left:50%;width:calc(100% + 20px);height:calc(100% + 20px);border-radius:50%;transform:translate(-50%,-50%);transform-origin:center;display:none;pointer-events:none;z-index:8;border:6px solid transparent}
+.wind-sector{position:absolute;top:50%;left:50%;width:100%;height:100%;border-radius:50%;transform:translate(-50%,-50%);transform-origin:center;display:none;pointer-events:none;z-index:8;border:6px solid transparent}
 .wind-sector.variable{display:block}
 
 /* ========== ВПП ========== */
@@ -389,7 +389,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.0-beta</div>
+<div class="version">v1.0.2 (alpha)</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -564,10 +564,6 @@ select:focus,input:focus{
 <div class="forecast-field">
 <div class="forecast-label">METAR</div>
 <div class="forecast-value" id="metarCode">-</div>
-<button class="copy-metar-btn" id="copyMetarBtn" type="button">
-<span class="en">Copy</span>
-<span class="ru" style="display:none">Копировать</span>
-</button>
 </div>
 </div>
 </div>
@@ -582,68 +578,6 @@ let currentRunwayData = null;
 let updateInterval = null;
 let globalAPI = null;
 let userPreferredWindUnit = null;
-let copyMetarResetTimer = null;
-
-function syncCopyMetarButtonLabels() {
-  const button = document.getElementById('copyMetarBtn');
-  if (!button) return;
-
-  const en = button.querySelector('.en');
-  const ru = button.querySelector('.ru');
-  const isCopied = button.classList.contains('copied');
-
-  if (en) en.textContent = isCopied ? 'Copied' : 'Copy';
-  if (ru) ru.textContent = isCopied ? 'Скопировано' : 'Копировать';
-}
-
-function setCopyMetarButtonState(isCopied) {
-  const button = document.getElementById('copyMetarBtn');
-  if (!button) return;
-
-  button.classList.toggle('copied', isCopied);
-  syncCopyMetarButtonLabels();
-}
-
-function updateCopyMetarButtonState(metarText) {
-  const button = document.getElementById('copyMetarBtn');
-  if (!button) return;
-
-  const hasMetar = Boolean(metarText && metarText.trim() && metarText.trim() !== '-');
-  button.disabled = !hasMetar;
-
-  if (!hasMetar) {
-    if (copyMetarResetTimer) {
-      clearTimeout(copyMetarResetTimer);
-      copyMetarResetTimer = null;
-    }
-    setCopyMetarButtonState(false);
-  }
-}
-
-async function copyTextToClipboard(text) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    await navigator.clipboard.writeText(text);
-    return true;
-  }
-
-  const textarea = document.createElement('textarea');
-  textarea.value = text;
-  textarea.style.position = 'fixed';
-  textarea.style.opacity = '0';
-  document.body.appendChild(textarea);
-  textarea.focus();
-  textarea.select();
-
-  let success = false;
-  try {
-    success = document.execCommand('copy');
-  } catch (error) {
-    console.warn('Copy fallback failed:', error);
-  }
-
-  document.body.removeChild(textarea);
-  return success;
-}
 
 // ========== ИСТОРИЯ METAR (ГИБРИДНЫЙ МЕТОД) ==========
 
@@ -1052,6 +986,30 @@ function parseMetar(metarString) {
   if (!metarString) return null;
 
   const parts = metarString.split(' ');
+
+  const weatherCodes = [
+    'DZ', 'RA', 'SN', 'SG', 'IC', 'PL', 'GR', 'GS', 'UP',
+    'BR', 'FG', 'FU', 'VA', 'DU', 'SA', 'HZ', 'PY',
+    'PO', 'SQ', 'FC', 'SS', 'DS'
+  ];
+
+  function expandWeatherToken(token) {
+    const match = token.match(/^(\+|-|VC)?(MI|PR|BC|DR|BL|SH|TS|FZ)?(.+)$/);
+    if (!match) return [token];
+
+    const intensity = match[1] || '';
+    const descriptor = match[2] || '';
+    const remainder = match[3];
+    const codePattern = new RegExp(weatherCodes.join('|'), 'g');
+    const foundCodes = remainder.match(codePattern) || [];
+    const concatenated = foundCodes.join('');
+
+    if (!foundCodes.length || concatenated !== remainder) {
+      return [token];
+    }
+
+    return foundCodes.map((code) => `${intensity}${descriptor}${code}`);
+  }
   const data = {
     raw: metarString,
     icao: parts[0],
@@ -1137,16 +1095,17 @@ function parseMetar(metarString) {
       });
     }
 
-    if (part.match(/^(\+|-|VC)?(MI|PR|BC|DR|BL|SH|TS|FZ)?(DZ|RA|SN|SG|IC|PL|GR|GS|UP)?(BR|FG|FU|VA|DU|SA|HZ|PY)?(PO|SQ|FC|SS|DS)?$/)) {
+    if (part.match(/^(\+|-|VC)?(MI|PR|BC|DR|BL|SH|TS|FZ)?((DZ|RA|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|VA|DU|SA|HZ|PY|PO|SQ|FC|SS|DS)+)$/)) {
       if (!part.match(/^(SKC|CLR|FEW|SCT|BKN|OVC|NSC|NCD|CAVOK|NOSIG|TEMPO|BECMG|RMK|Q\d{4}|R\d{2})/)) {
-        data.weather.push(part);
+        const expanded = expandWeatherToken(part);
+        expanded.forEach((code) => data.weather.push(code));
       }
     }
 
     // ПАРСИНГ СОСТОЯНИЯ ВПП - формат R12L/620142 или R12/620142
     // R - префикс, 12 - номер ВПП, L/R/C - индикатор (опционально), 620142 - состояние
-    if (part.match(/^R\d{2}[LRC]?\/\d{6}$/)) {
-      const runwayStateMatch = part.match(/^R(\d{2}[LRC]?)\/(\d)(\d)(\d{2})(\d{2})$/);
+    if (part.match(/^R\d{2}[LRC]?\/\d{2}(?:\d{2}|\/\/)(?:\d{2}|\/\/)$/)) {
+      const runwayStateMatch = part.match(/^R(\d{2}[LRC]?)\/(\d)(\d)(\d{2}|\/\/)(\d{2}|\/\/)$/);
       if (runwayStateMatch) {
         console.log(`✅ Найдено состояние ВПП: ${part}`);
         data.runwayStates.push({
@@ -1161,8 +1120,8 @@ function parseMetar(metarString) {
     }
 
     // ПАРСИНГ СОСТОЯНИЯ ВПП - формат 12L/620142 или 12/620142 (без префикса R)
-    if (part.match(/^\d{2}[LRC]?\/\d{6}$/)) {
-      const runwayStateMatch = part.match(/^(\d{2}[LRC]?)\/(\d)(\d)(\d{2})(\d{2})$/);
+    if (part.match(/^\d{2}[LRC]?\/\d{2}(?:\d{2}|\/\/)(?:\d{2}|\/\/)$/)) {
+      const runwayStateMatch = part.match(/^(\d{2}[LRC]?)\/(\d)(\d)(\d{2}|\/\/)(\d{2}|\/\/)$/);
       if (runwayStateMatch) {
         console.log(`✅ Найдено состояние ВПП: ${part}`);
         data.runwayStates.push({
@@ -1177,8 +1136,8 @@ function parseMetar(metarString) {
     }
 
     // ПАРСИНГ СОСТОЯНИЯ ВСЕХ ВПП - формат 88/620142
-    if (part.match(/^88\/\d{6}$/)) {
-      const allRunwaysMatch = part.match(/^(88)\/(\d)(\d)(\d{2})(\d{2})$/);
+    if (part.match(/^88\/\d{2}(?:\d{2}|\/\/)(?:\d{2}|\/\/)$/)) {
+      const allRunwaysMatch = part.match(/^(88)\/(\d)(\d)(\d{2}|\/\/)(\d{2}|\/\/)$/);
       if (allRunwaysMatch) {
         console.log(`✅ Найдено состояние всех ВПП: ${part}`);
         data.runwayStates.push({
@@ -1287,6 +1246,27 @@ function parseSpecialConditionsFromRemarks(remarksString, language = 'ru') {
   }
 
   return result;
+}
+
+function updateSpecialConditionsLanguage(lang) {
+  if (!currentMetarData || !currentMetarData.raw) return;
+
+  const remarksSection = extractRemarksSection(currentMetarData.raw);
+  if (remarksSection) {
+    currentMetarData.specialConditions = parseSpecialConditionsFromRemarks(remarksSection, lang);
+  } else {
+    currentMetarData.specialConditions = { qfe: null, qbb: null, other: [] };
+  }
+
+  const specialEl = document.getElementById('specialConditions');
+  if (!specialEl) return;
+
+  if (currentMetarData.specialConditions.other.length > 0) {
+    const specialTexts = currentMetarData.specialConditions.other.map(item => item.decoded);
+    specialEl.textContent = specialTexts.join(', ');
+  } else {
+    specialEl.textContent = '-';
+  }
 }
 
 async function fetchMetarData(icao) {
@@ -1734,9 +1714,21 @@ class RunwayStateDecoder {
       if (matchingState) {
         console.log(`✅ Found matching state:`, matchingState);
         return this.parseStateFromObject(matchingState);
-      } else {
-        console.log(`⚠️ No matching state found for runway ${runwayNumber}`);
       }
+
+      const oppositeRunway = this.getOppositeRunway(runwayIdent);
+      if (oppositeRunway) {
+        const oppositeMatch = currentMetarData.runwayStates.find(state => {
+          const matches = state.runway === oppositeRunway;
+          console.log(`  Checking opposite runway ${state.runway}: ${matches ? '✅ MATCH' : '❌'}`);
+          return matches;
+        });
+        if (oppositeMatch) {
+          console.log(`✅ Found opposite runway state:`, oppositeMatch);
+          return this.parseStateFromObject(oppositeMatch);
+        }
+      }
+      console.log(`⚠️ No matching state found for runway ${runwayNumber}`);
     } else {
       console.log(`⚠️ No runway states in currentMetarData`);
     }
@@ -1755,6 +1747,23 @@ class RunwayStateDecoder {
       return number.padStart(2, '0') + indicator;
     }
     return '00';
+  }
+
+  getOppositeRunway(runwayIdent) {
+    const cleaned = this.extractRunwayNumber(runwayIdent);
+    if (!cleaned || cleaned === '00') return null;
+
+    const numberMatch = cleaned.match(/^(\d{2})/);
+    if (!numberMatch) return null;
+
+    const indicator = cleaned.match(/[LRC]$/)?.[0] || '';
+    const number = parseInt(numberMatch[1], 10);
+    if (!number) return null;
+
+    const oppositeNumber = ((number + 17) % 36) + 1;
+    const oppositeIndicator = indicator === 'L' ? 'R' : indicator === 'R' ? 'L' : indicator;
+
+    return oppositeNumber.toString().padStart(2, '0') + oppositeIndicator;
   }
 
   parseStateFromObject(stateObject) {
@@ -2029,25 +2038,76 @@ const weatherHybridDictionary = {
 
 const weatherIntensityMap = {
   "+": { en: "Heavy", ru: "Сильный" },
-  "-": { en: "Light", ru: "Слабый" }
+  "-": { en: "Light", ru: "Слабый" },
+  "VC": { en: "In the vicinity", ru: "В окрестности" }
 };
 
 const weatherDescriptorMap = {
+  MI: { en: "Shallow", ru: "Слабый" },
+  PR: { en: "Partial", ru: "Частичный" },
+  BC: { en: "Patches", ru: "Отдельные" },
+  DR: { en: "Low drifting", ru: "Слабый перенос" },
+  BL: { en: "Blowing", ru: "Поземный" },
   SH: { en: "Showers", ru: "Ливневый" },
   TS: { en: "Thunderstorm", ru: "Гроза" },
-  FZ: { en: "Freezing", ru: "Переохлаждённый" },
-  VC: { en: "In the vicinity", ru: "В окрестности" }
+  FZ: { en: "Freezing", ru: "Переохлаждённый" }
 };
 
 const weatherPhenomenaMap = {
   DZ: { en: "Drizzle", ru: "Морось" },
   RA: { en: "Rain", ru: "Дождь" },
   SN: { en: "Snow", ru: "Снег" },
+  SG: { en: "Snow grains", ru: "Снежные зёрна" },
+  IC: { en: "Ice crystals", ru: "Ледяные кристаллы" },
+  PL: { en: "Ice pellets", ru: "Ледяные иглы" },
+  GR: { en: "Hail", ru: "Град" },
+  GS: { en: "Small hail", ru: "Мелкий град" },
+  UP: { en: "Unknown precipitation", ru: "Неизвестные осадки" },
   BR: { en: "Mist", ru: "Дымка" },
   FG: { en: "Fog", ru: "Туман" },
   FU: { en: "Smoke", ru: "Дым" },
-  HZ: { en: "Haze", ru: "Мгла" }
+  VA: { en: "Volcanic ash", ru: "Вулканический пепел" },
+  DU: { en: "Dust", ru: "Пыль" },
+  SA: { en: "Sand", ru: "Песок" },
+  HZ: { en: "Haze", ru: "Мгла" },
+  PY: { en: "Spray", ru: "Брызги" },
+  PO: { en: "Dust whirls", ru: "Пылевые вихри" },
+  SQ: { en: "Squalls", ru: "Шквалы" },
+  FC: { en: "Funnel cloud", ru: "Воронкообразное облако" },
+  SS: { en: "Sandstorm", ru: "Песчаная буря" },
+  DS: { en: "Duststorm", ru: "Пыльная буря" }
 };
+
+function decodeWeatherToken(code, language = 'en') {
+  const match = code.match(/^(\+|-|VC)?(MI|PR|BC|DR|BL|SH|TS|FZ)?(.+)$/);
+  if (!match) return code;
+
+  const intensity = match[1] || '';
+  const descriptor = match[2] || '';
+  const phenomena = match[3] || '';
+  const intensityText = intensity ? weatherIntensityMap[intensity]?.[language] : '';
+  const descriptorText = descriptor ? weatherDescriptorMap[descriptor]?.[language] : '';
+  const phenomenonText = weatherPhenomenaMap[phenomena]?.[language] || phenomena;
+
+  if (descriptor === 'TS' && phenomenonText) {
+    const prefix = intensityText ? `${intensityText} ` : '';
+    return language === 'ru'
+      ? `${prefix}гроза с ${phenomenonText.toLowerCase()}`
+      : `${prefix}Thunderstorm with ${phenomenonText.toLowerCase()}`;
+  }
+
+  if (descriptor === 'SH' && phenomenonText) {
+    const prefix = intensityText ? `${intensityText} ` : '';
+    return language === 'ru'
+      ? `${prefix}${descriptorText} ${phenomenonText.toLowerCase()}`
+      : `${prefix}Showers of ${phenomenonText.toLowerCase()}`;
+  }
+
+  const parts = [intensityText, descriptorText, phenomenonText].filter(Boolean);
+  if (parts.length === 0) return code;
+
+  return parts.join(' ');
+}
 
 // ========== ЕДИНАЯ ОТРИСОВКА КОМПАСОВ ==========
 
@@ -2187,6 +2247,7 @@ function addWindToCompass(compassId) {
 
   const c = document.getElementById(compassId);
   const container = c.parentElement;
+  c.querySelectorAll('.wind-arrow, .wind-sector').forEach((el) => el.remove());
 
   const windDisplay = container.querySelector('.wind-display');
   if (windDisplay) {
@@ -2275,6 +2336,8 @@ function addWindToCompass(compassId) {
       const r = c.getBoundingClientRect();
       const s = Math.min(r.width, r.height);
       const rad = s / 2;
+      const cssRadius = parseFloat(getComputedStyle(c).getPropertyValue('--compass-radius')) || 0;
+      const compassRadius = cssRadius > 0 ? cssRadius : rad;
       const cx = s / 2, cy = s / 2;
 
       const fromAngle = currentMetarData.variableFrom;
@@ -2291,7 +2354,7 @@ function addWindToCompass(compassId) {
       svg.style.height = "100%";
       svg.style.pointerEvents = "none";
 
-      const arcRadius = rad * 0.9;
+      const arcRadius = Math.max(compassRadius - 6, 0);
       const startAngleRad = (fromAngle - 90) * Math.PI / 180;
       const endAngleRad = (toAngle - 90) * Math.PI / 180;
 
@@ -2306,9 +2369,9 @@ function addWindToCompass(compassId) {
 
       path.setAttribute("d", pathData);
       path.setAttribute("stroke", "#4A90E2");
-      path.setAttribute("stroke-width", "8");
+      path.setAttribute("stroke-width", "16");
       path.setAttribute("fill", "none");
-      path.setAttribute("stroke-linecap", "round");
+      path.setAttribute("stroke-linecap", "butt");
       path.setAttribute("opacity", "0.7");
 
       svg.appendChild(path);
@@ -2676,7 +2739,6 @@ function updateWeatherDisplay(data) {
   }
 
   document.getElementById('metarCode').textContent = data.raw;
-  updateCopyMetarButtonState(data.raw);
 
   if (data.pressure && data.pressure > 0) {
     const pressure = convertPressure(data.pressure);
@@ -2755,10 +2817,7 @@ function updateWeatherDisplay(data) {
   if (weatherEl) {
     if (data.weather && data.weather.length > 0) {
       const decodedWeather = data.weather.map(weatherCode => {
-        if (weatherHybridDictionary[weatherCode]) {
-          return weatherHybridDictionary[weatherCode][currentLanguage];
-        }
-        return weatherCode;
+        return decodeWeatherToken(weatherCode, currentLanguage);
       });
 
       const finalWeatherText = decodedWeather.join(', ');
@@ -3156,8 +3215,6 @@ function handleIcaoInput() {
       initializeDefaultCompassInfo(0);
       initializeDefaultCompassInfo(1);
 
-      updateCopyMetarButtonState('-');
-
       updateConnectionStatus('', 'Enter ICAO code');
 
     } else {
@@ -3223,6 +3280,7 @@ function applyLanguage(lang) {
 
     const morUnits = document.querySelector('#morLabel').parentElement.querySelector('.units');
     if (morUnits) morUnits.textContent = 'м';
+    updateSpecialConditionsLanguage('ru');
 
   } else {
     document.getElementById('timeLabel').textContent = 'Time UTC';
@@ -3243,6 +3301,7 @@ function applyLanguage(lang) {
 
     const morUnits = document.querySelector('#morLabel').parentElement.querySelector('.units');
     if (morUnits) morUnits.textContent = 'm';
+    updateSpecialConditionsLanguage('en');
   }
 
   document.querySelectorAll('.en').forEach(element => {
@@ -3315,29 +3374,6 @@ document.addEventListener('DOMContentLoaded', function() {
   applyLanguage('en');
   handleIcaoInput();
 
-  const copyMetarBtn = document.getElementById('copyMetarBtn');
-  if (copyMetarBtn) {
-    copyMetarBtn.addEventListener('click', async () => {
-      const metarText = document.getElementById('metarCode')?.textContent?.trim();
-      if (!metarText || metarText === '-') return;
-
-      try {
-        const copied = await copyTextToClipboard(metarText);
-        if (copied) {
-          setCopyMetarButtonState(true);
-          if (copyMetarResetTimer) {
-            clearTimeout(copyMetarResetTimer);
-          }
-          copyMetarResetTimer = setTimeout(() => setCopyMetarButtonState(false), 2000);
-        }
-      } catch (error) {
-        console.warn('Unable to copy METAR:', error);
-      }
-    });
-  }
-
-  updateCopyMetarButtonState(document.getElementById('metarCode')?.textContent);
-
   document.getElementById('runwaySelect').addEventListener('change', function() {
     updateOppositeRunway();
   });
@@ -3362,7 +3398,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 100);
   });
 
-  console.log('✅ Application initialized - v1.0.16 - Hybrid METAR History (API + localStorage)');
+  console.log('✅ Application initialized - v1.0.2 (alpha) - Hybrid METAR History (API + localStorage)');
 });
 </script>
 
