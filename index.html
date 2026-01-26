@@ -2209,6 +2209,8 @@ function addWindToCompass(compassId) {
       const r = c.getBoundingClientRect();
       const s = Math.min(r.width, r.height);
       const rad = s / 2;
+      const cssRadius = parseFloat(getComputedStyle(c).getPropertyValue('--compass-radius')) || 0;
+      const compassRadius = cssRadius > 0 ? cssRadius : rad;
       const cx = s / 2, cy = s / 2;
 
       const fromAngle = currentMetarData.variableFrom;
@@ -2225,7 +2227,7 @@ function addWindToCompass(compassId) {
       svg.style.height = "100%";
       svg.style.pointerEvents = "none";
 
-      const arcRadius = Math.max(rad - 8, 0);
+      const arcRadius = Math.max(compassRadius - 6, 0);
       const startAngleRad = (fromAngle - 90) * Math.PI / 180;
       const endAngleRad = (toAngle - 90) * Math.PI / 180;
 
