@@ -15,7 +15,10 @@ Single-page web app that displays airport METAR/weather data, runway information
 - The user frequently requests specific UI layout/compass behavior changes and expects strict adherence to instructions.
 
 ## Current Task (this chat)
-- **Create this `AI_CONTEXT.md` file** with full project context and current task so it can be referenced in a new chat.
+- **Update `AI_CONTEXT.md`** with the current project status for handoff:
+  - Version bumped to **v1.0.7 (alpha)**.
+  - Added runway-specific info blocks in compass footers with red alert styling (used for wind shear).
+  - Scoped variable-wind arcs to the correct wind source (main vs runway-specific), including variable ranges parsed from remarks.
 
 ## Recent Issue Thread (high level)
 - User requested removal of a METAR Copy button and questioned where it still appears.
