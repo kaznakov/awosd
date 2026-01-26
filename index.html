@@ -1248,6 +1248,27 @@ function parseSpecialConditionsFromRemarks(remarksString, language = 'ru') {
   return result;
 }
 
+function updateSpecialConditionsLanguage(lang) {
+  if (!currentMetarData || !currentMetarData.raw) return;
+
+  const remarksSection = extractRemarksSection(currentMetarData.raw);
+  if (remarksSection) {
+    currentMetarData.specialConditions = parseSpecialConditionsFromRemarks(remarksSection, lang);
+  } else {
+    currentMetarData.specialConditions = { qfe: null, qbb: null, other: [] };
+  }
+
+  const specialEl = document.getElementById('specialConditions');
+  if (!specialEl) return;
+
+  if (currentMetarData.specialConditions.other.length > 0) {
+    const specialTexts = currentMetarData.specialConditions.other.map(item => item.decoded);
+    specialEl.textContent = specialTexts.join(', ');
+  } else {
+    specialEl.textContent = '-';
+  }
+}
+
 async function fetchMetarData(icao) {
   updateConnectionStatus('loading', 'Loading METAR...');
 
@@ -3182,6 +3203,7 @@ function applyLanguage(lang) {
 
     const morUnits = document.querySelector('#morLabel').parentElement.querySelector('.units');
     if (morUnits) morUnits.textContent = 'м';
+    updateSpecialConditionsLanguage('ru');
 
   } else {
     document.getElementById('timeLabel').textContent = 'Time UTC';
@@ -3202,6 +3224,7 @@ function applyLanguage(lang) {
 
     const morUnits = document.querySelector('#morLabel').parentElement.querySelector('.units');
     if (morUnits) morUnits.textContent = 'm';
+    updateSpecialConditionsLanguage('en');
   }
 
   document.querySelectorAll('.en').forEach(element => {
