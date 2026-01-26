@@ -116,10 +116,11 @@ select:focus,input:focus{
 .compass-stage{position:relative;width:100%;aspect-ratio:1;flex:0 0 auto}
 .compass-row{position:absolute;left:15px;right:15px;display:flex;align-items:center;justify-content:space-between;z-index:5}
 .compass-row-top{top:15px}
-.compass-row-bottom{bottom:15px;justify-content:flex-end}
+.compass-row-bottom{bottom:15px;justify-content:space-between}
 .compass-row-top .lateral-component{justify-self:start}
 .compass-row-top .headwind-component{justify-self:end}
 .compass-row-bottom .friction-coefficient{justify-self:end}
+.compass-row-bottom .runway-alert{justify-self:start}
 
 /* ========== СТАТУС ПОДКЛЮЧЕНИЯ ========== */
 .connection-status{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);padding:4px 8px;border-radius:999px;background:rgba(148,163,184,.12)}
@@ -254,13 +255,16 @@ select:focus,input:focus{
 /* ========== КОМПОНЕНТЫ ВЕТРА ========== */
 .lateral-component,.headwind-component{position:relative;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center}
 .lateral-component .data-label,.headwind-component .data-label{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:2px;background:transparent;font-size:clamp(6px,0.65vw,8px)}
-.friction-coefficient{position:relative;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center}
-.friction-coefficient .data-label{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:2px;background:transparent;font-size:clamp(6px,0.65vw,8px)}
-.dark .lateral-component,.dark .headwind-component,.dark .friction-coefficient{background:rgba(148,163,184,.15);color:var(--muted)}
+.friction-coefficient,.runway-alert{position:relative;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center}
+.friction-coefficient .data-label,.runway-alert .data-label{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:2px;background:transparent;font-size:clamp(6px,0.65vw,8px)}
+.runway-alert .data-value{color:#dc2626;font-weight:700}
+.dark .lateral-component,.dark .headwind-component,.dark .friction-coefficient,.dark .runway-alert{background:rgba(148,163,184,.15);color:var(--muted)}
+.dark .runway-alert .data-value{color:#f87171}
 
 .lateral-component.compass-info-item,
 .headwind-component.compass-info-item,
-.friction-coefficient.compass-info-item{
+.friction-coefficient.compass-info-item,
+.runway-alert.compass-info-item{
   display:flex;
   align-items:center;
   justify-content:center;
@@ -433,6 +437,10 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="compass-row compass-row-bottom">
+<div class="runway-alert compass-info-item">
+<div class="data-value">-</div>
+<div class="data-label" id="runwayAlertLabel1">Alert</div>
+</div>
 <div class="friction-coefficient compass-info-item">
 <div class="data-value">-</div>
 <div class="data-label" id="frictionLabel1">Breaking action</div>
@@ -544,6 +552,10 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="compass-row compass-row-bottom">
+<div class="runway-alert compass-info-item">
+<div class="data-value">-</div>
+<div class="data-label" id="runwayAlertLabel2">Alert</div>
+</div>
 <div class="friction-coefficient compass-info-item">
 <div class="data-value">-</div>
 <div class="data-label" id="frictionLabel2">Breaking action</div>
@@ -1014,7 +1026,15 @@ function parseMetar(metarString) {
     raw: metarString,
     icao: parts[0],
     time: '',
-    wind: { direction: 0, speed: 0, gust: 0, variable: false, calm: false },
+    wind: {
+      direction: 0,
+      speed: 0,
+      gust: 0,
+      variable: false,
+      variableFrom: null,
+      variableTo: null,
+      calm: false
+    },
     windUnit: 'kt',
     visibility: 0,
     weather: [],
@@ -1023,11 +1043,19 @@ function parseMetar(metarString) {
     dewpoint: null,
     pressure: 0,
     runwayStates: [],
-    runwayWinds: {}
+    runwayWinds: {},
+    runwayAlerts: {}
   };
+
+  let inRemarks = false;
 
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i];
+
+    if (part === 'RMK') {
+      inRemarks = true;
+      continue;
+    }
 
     if (part.match(/^\d{6}Z$/)) {
       data.time = part;
@@ -1061,11 +1089,11 @@ function parseMetar(metarString) {
       data.wind.speed = 0;
     }
 
-    if (part.match(/^\d{3}V\d{3}$/)) {
+    if (!inRemarks && part.match(/^\d{3}V\d{3}$/)) {
       data.wind.variable = true;
       const winds = part.split('V');
-      data.variableFrom = parseInt(winds[0]);
-      data.variableTo = parseInt(winds[1]);
+      data.wind.variableFrom = parseInt(winds[0], 10);
+      data.wind.variableTo = parseInt(winds[1], 10);
     }
 
     if (part.match(/^\d{4}$/) && parseInt(part) > 100) {
@@ -1080,6 +1108,19 @@ function parseMetar(metarString) {
 
     if (part.match(/^Q\d{4}$/)) {
       data.pressure = parseInt(part.substring(1));
+    }
+
+    if (part === 'WS' && i + 1 < parts.length) {
+      const runwayMatch = parts[i + 1].match(/^R(\d{2}[LRC]?)$/);
+      if (runwayMatch) {
+        const runway = runwayMatch[1];
+        const normalizedRunway = runway.replace(/[LRC]/g, '');
+        if (!data.runwayAlerts[normalizedRunway]) {
+          data.runwayAlerts[normalizedRunway] = [];
+        }
+        data.runwayAlerts[normalizedRunway].push('WS');
+        i++;
+      }
     }
 
     if (part.match(/^(SKC|CLR|FEW|SCT|BKN|OVC|NSC|NCD)\d{0,3}(CB|TCU)?$/)) {
@@ -1257,25 +1298,41 @@ function parseRunwayWindsFromRemarks(remarksString) {
   const runwayWinds = {};
   const parts = remarksString.split(/\s+/);
 
-  parts.forEach((part) => {
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
     const match = part.match(/^R(\d{2}[LRC]?)\/(\d{3})(\d{2})(G(\d{2}))?(KT|MPS)$/);
-    if (!match) return;
+    if (!match) continue;
 
     const runway = match[1];
     const direction = parseInt(match[2], 10);
     const speed = parseInt(match[3], 10);
     const gust = match[5] ? parseInt(match[5], 10) : 0;
     const unit = match[6] === 'MPS' ? 'м/с' : 'kt';
+    const variableToken = parts[i + 1];
+    let variableFrom = null;
+    let variableTo = null;
+    let variable = false;
 
-    runwayWinds[runway] = {
+    if (variableToken && variableToken.match(/^\d{3}V\d{3}$/)) {
+      const winds = variableToken.split('V');
+      variableFrom = parseInt(winds[0], 10);
+      variableTo = parseInt(winds[1], 10);
+      variable = true;
+    }
+
+    const normalizedRunway = runway.replace(/[LRC]/g, '');
+
+    runwayWinds[normalizedRunway] = {
       direction,
       speed,
       gust,
       unit,
       calm: speed === 0,
-      variable: false
+      variable,
+      variableFrom,
+      variableTo
     };
-  });
+  }
 
   return runwayWinds;
 }
@@ -1333,7 +1390,7 @@ function generateDemoData(icao) {
     raw: `${icao} NO METAR`,
     icao: icao,
     time: '121853Z',
-    wind: { direction: 190, speed: 5, gust: 0, variable: false, calm: false },
+    wind: { direction: 190, speed: 5, gust: 0, variable: false, variableFrom: null, variableTo: null, calm: false },
     windUnit: 'kt',
     visibility: 9999,
     weather: [],
@@ -1343,7 +1400,8 @@ function generateDemoData(icao) {
     ],
     temperature: 12,
     dewpoint: 8,
-    pressure: 1013
+    pressure: 1013,
+    runwayAlerts: {}
   };
 }
 
@@ -2295,7 +2353,7 @@ function addWindToCompass(compassId) {
     ? currentMetarData.runwayWinds[runwayKey]
     : null;
   const windSource = runwayWind || currentMetarData.wind;
-  const useVariableWind = !runwayWind && currentMetarData.wind.variable;
+  const useVariableWind = !!windSource.variable;
   let windDir = windSource.calm ? 0 : windSource.direction;
   let windSpeed = windSource.calm ? 0 : windSource.speed;
   let windGust = windSource.gust || 0;
@@ -2379,7 +2437,7 @@ function addWindToCompass(compassId) {
     const ws = document.createElement('div');
     ws.className = 'wind-sector variable';
 
-    if (currentMetarData.variableFrom !== undefined && currentMetarData.variableTo !== undefined) {
+    if (windSource.variableFrom !== null && windSource.variableTo !== null) {
       const r = c.getBoundingClientRect();
       const s = Math.min(r.width, r.height);
       const rad = s / 2;
@@ -2387,8 +2445,8 @@ function addWindToCompass(compassId) {
       const compassRadius = cssRadius > 0 ? cssRadius : rad;
       const cx = s / 2, cy = s / 2;
 
-      const fromAngle = currentMetarData.variableFrom;
-      const toAngle = currentMetarData.variableTo;
+      const fromAngle = windSource.variableFrom;
+      const toAngle = windSource.variableTo;
       let arcSpan = toAngle - fromAngle;
       if (arcSpan < 0) arcSpan += 360;
 
@@ -2590,6 +2648,12 @@ function initializeDefaultCompassInfo(compassIndex) {
     </div>
   `;
   compassInfo.appendChild(runwayStateRow);
+
+  const compassBlock = compassInfo.closest('.block');
+  const alertElement = compassBlock ? compassBlock.querySelector('.runway-alert .data-value') : null;
+  if (alertElement) {
+    alertElement.textContent = '-';
+  }
 }
 
 // ========== ОБНОВЛЕНИЕ ДИСПЛЕЕВ ==========
@@ -2729,6 +2793,39 @@ function updateRunwayStateDisplay(compassIndex) {
     frictionElement.textContent = runwayState.friction;
     console.log(`✅ Friction coefficient updated: ${runwayState.friction}`);
   }
+}
+
+function updateRunwayAlertDisplay(compassIndex) {
+  const compassInfo = document.querySelectorAll('.compass-info')[compassIndex];
+  if (!compassInfo) return;
+
+  const compassBlock = compassInfo.closest('.block');
+  const alertElement = compassBlock ? compassBlock.querySelector('.runway-alert .data-value') : null;
+  if (!alertElement) return;
+
+  if (!currentMetarData || !currentMetarData.runwayAlerts) {
+    alertElement.textContent = '-';
+    return;
+  }
+
+  let runwayIdent = '';
+  if (compassIndex === 0) {
+    runwayIdent = document.getElementById('runwaySelect')?.value;
+  } else {
+    runwayIdent = document.getElementById('runwayDisplay2')?.textContent;
+  }
+
+  if (!runwayIdent || runwayIdent === '--') {
+    alertElement.textContent = '-';
+    return;
+  }
+
+  const runwayKey = window.runwayStateDecoder?.extractRunwayNumber
+    ? window.runwayStateDecoder.extractRunwayNumber(runwayIdent)
+    : runwayIdent.replace(/[LRC]/g, '');
+
+  const alerts = currentMetarData.runwayAlerts[runwayKey];
+  alertElement.textContent = alerts && alerts.length > 0 ? alerts.join(', ') : '-';
 }
 
 async function updateQFEForSelectedRunways() {
@@ -2892,6 +2989,8 @@ function updateWeatherDisplay(data) {
   } else {
     console.log(`⚠️ No runway states in data`);
   }
+  updateRunwayAlertDisplay(0);
+  updateRunwayAlertDisplay(1);
 
   updateSunriseSunset();
   if (currentRunwayData) {
@@ -2973,6 +3072,8 @@ async function updateRunwayOptions(icao) {
     updateQFEForSelectedRunways();
     updateRunwayStateDisplay(0);
     updateRunwayStateDisplay(1);
+    updateRunwayAlertDisplay(0);
+    updateRunwayAlertDisplay(1);
 
     updateConnectionStatus('connected', `${uniqueRunways.length} runways loaded`);
 
@@ -3005,6 +3106,8 @@ function updateOppositeRunway() {
   updateQFEForSelectedRunways();
   updateRunwayStateDisplay(0);
   updateRunwayStateDisplay(1);
+  updateRunwayAlertDisplay(0);
+  updateRunwayAlertDisplay(1);
 }
 
 function getOppositeRunway(selectedRunway) {
@@ -3355,9 +3458,11 @@ function applyLanguage(lang) {
     document.getElementById('specialLabel').textContent = 'Особые условия';
     document.getElementById('lateralLabel1').textContent = 'Боковая';
     document.getElementById('headwindLabel1').textContent = 'Встречная';
+    document.getElementById('runwayAlertLabel1').textContent = 'Предупр.';
     document.getElementById('frictionLabel1').textContent = 'КСц';
     document.getElementById('lateralLabel2').textContent = 'Боковая';
     document.getElementById('headwindLabel2').textContent = 'Встречная';
+    document.getElementById('runwayAlertLabel2').textContent = 'Предупр.';
     document.getElementById('frictionLabel2').textContent = 'КСц';
 
     const morUnits = document.querySelector('#morLabel').parentElement.querySelector('.units');
@@ -3376,9 +3481,11 @@ function applyLanguage(lang) {
     document.getElementById('specialLabel').textContent = 'Special conditions';
     document.getElementById('lateralLabel1').textContent = 'Side';
     document.getElementById('headwindLabel1').textContent = 'Head';
+    document.getElementById('runwayAlertLabel1').textContent = 'Alert';
     document.getElementById('frictionLabel1').textContent = 'Breaking action';
     document.getElementById('lateralLabel2').textContent = 'Side';
     document.getElementById('headwindLabel2').textContent = 'Head';
+    document.getElementById('runwayAlertLabel2').textContent = 'Alert';
     document.getElementById('frictionLabel2').textContent = 'Breaking action';
 
     const morUnits = document.querySelector('#morLabel').parentElement.querySelector('.units');
