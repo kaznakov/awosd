@@ -986,6 +986,30 @@ function parseMetar(metarString) {
   if (!metarString) return null;
 
   const parts = metarString.split(' ');
+
+  const weatherCodes = [
+    'DZ', 'RA', 'SN', 'SG', 'IC', 'PL', 'GR', 'GS', 'UP',
+    'BR', 'FG', 'FU', 'VA', 'DU', 'SA', 'HZ', 'PY',
+    'PO', 'SQ', 'FC', 'SS', 'DS'
+  ];
+
+  function expandWeatherToken(token) {
+    const match = token.match(/^(\+|-|VC)?(MI|PR|BC|DR|BL|SH|TS|FZ)?(.+)$/);
+    if (!match) return [token];
+
+    const intensity = match[1] || '';
+    const descriptor = match[2] || '';
+    const remainder = match[3];
+    const codePattern = new RegExp(weatherCodes.join('|'), 'g');
+    const foundCodes = remainder.match(codePattern) || [];
+    const concatenated = foundCodes.join('');
+
+    if (!foundCodes.length || concatenated !== remainder) {
+      return [token];
+    }
+
+    return foundCodes.map((code) => `${intensity}${descriptor}${code}`);
+  }
   const data = {
     raw: metarString,
     icao: parts[0],
@@ -1071,9 +1095,10 @@ function parseMetar(metarString) {
       });
     }
 
-    if (part.match(/^(\+|-|VC)?(MI|PR|BC|DR|BL|SH|TS|FZ)?(DZ|RA|SN|SG|IC|PL|GR|GS|UP)?(BR|FG|FU|VA|DU|SA|HZ|PY)?(PO|SQ|FC|SS|DS)?$/)) {
+    if (part.match(/^(\+|-|VC)?(MI|PR|BC|DR|BL|SH|TS|FZ)?((DZ|RA|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|VA|DU|SA|HZ|PY|PO|SQ|FC|SS|DS)+)$/)) {
       if (!part.match(/^(SKC|CLR|FEW|SCT|BKN|OVC|NSC|NCD|CAVOK|NOSIG|TEMPO|BECMG|RMK|Q\d{4}|R\d{2})/)) {
-        data.weather.push(part);
+        const expanded = expandWeatherToken(part);
+        expanded.forEach((code) => data.weather.push(code));
       }
     }
 
