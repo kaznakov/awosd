@@ -2121,6 +2121,7 @@ function addWindToCompass(compassId) {
 
   const c = document.getElementById(compassId);
   const container = c.parentElement;
+  c.querySelectorAll('.wind-arrow, .wind-sector').forEach((el) => el.remove());
 
   const windDisplay = container.querySelector('.wind-display');
   if (windDisplay) {
