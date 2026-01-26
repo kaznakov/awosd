@@ -236,7 +236,7 @@ select:focus,input:focus{
 .dark .wind-arrow::after{border-top-color:#6BB6FF}
 
 /* Сектор переменного ветра */
-.wind-sector{position:absolute;top:50%;left:50%;width:calc(100% + 20px);height:calc(100% + 20px);border-radius:50%;transform:translate(-50%,-50%);transform-origin:center;display:none;pointer-events:none;z-index:8;border:6px solid transparent}
+.wind-sector{position:absolute;top:50%;left:50%;width:100%;height:100%;border-radius:50%;transform:translate(-50%,-50%);transform-origin:center;display:none;pointer-events:none;z-index:8;border:6px solid transparent}
 .wind-sector.variable{display:block}
 
 /* ========== ВПП ========== */
@@ -564,10 +564,6 @@ select:focus,input:focus{
 <div class="forecast-field">
 <div class="forecast-label">METAR</div>
 <div class="forecast-value" id="metarCode">-</div>
-<button class="copy-metar-btn" id="copyMetarBtn" type="button">
-<span class="en">Copy</span>
-<span class="ru" style="display:none">Копировать</span>
-</button>
 </div>
 </div>
 </div>
@@ -582,68 +578,6 @@ let currentRunwayData = null;
 let updateInterval = null;
 let globalAPI = null;
 let userPreferredWindUnit = null;
-let copyMetarResetTimer = null;
-
-function syncCopyMetarButtonLabels() {
-  const button = document.getElementById('copyMetarBtn');
-  if (!button) return;
-
-  const en = button.querySelector('.en');
-  const ru = button.querySelector('.ru');
-  const isCopied = button.classList.contains('copied');
-
-  if (en) en.textContent = isCopied ? 'Copied' : 'Copy';
-  if (ru) ru.textContent = isCopied ? 'Скопировано' : 'Копировать';
-}
-
-function setCopyMetarButtonState(isCopied) {
-  const button = document.getElementById('copyMetarBtn');
-  if (!button) return;
-
-  button.classList.toggle('copied', isCopied);
-  syncCopyMetarButtonLabels();
-}
-
-function updateCopyMetarButtonState(metarText) {
-  const button = document.getElementById('copyMetarBtn');
-  if (!button) return;
-
-  const hasMetar = Boolean(metarText && metarText.trim() && metarText.trim() !== '-');
-  button.disabled = !hasMetar;
-
-  if (!hasMetar) {
-    if (copyMetarResetTimer) {
-      clearTimeout(copyMetarResetTimer);
-      copyMetarResetTimer = null;
-    }
-    setCopyMetarButtonState(false);
-  }
-}
-
-async function copyTextToClipboard(text) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    await navigator.clipboard.writeText(text);
-    return true;
-  }
-
-  const textarea = document.createElement('textarea');
-  textarea.value = text;
-  textarea.style.position = 'fixed';
-  textarea.style.opacity = '0';
-  document.body.appendChild(textarea);
-  textarea.focus();
-  textarea.select();
-
-  let success = false;
-  try {
-    success = document.execCommand('copy');
-  } catch (error) {
-    console.warn('Copy fallback failed:', error);
-  }
-
-  document.body.removeChild(textarea);
-  return success;
-}
 
 // ========== ИСТОРИЯ METAR (ГИБРИДНЫЙ МЕТОД) ==========
 
@@ -2187,6 +2121,7 @@ function addWindToCompass(compassId) {
 
   const c = document.getElementById(compassId);
   const container = c.parentElement;
+  c.querySelectorAll('.wind-arrow, .wind-sector').forEach((el) => el.remove());
 
   const windDisplay = container.querySelector('.wind-display');
   if (windDisplay) {
@@ -2275,6 +2210,8 @@ function addWindToCompass(compassId) {
       const r = c.getBoundingClientRect();
       const s = Math.min(r.width, r.height);
       const rad = s / 2;
+      const cssRadius = parseFloat(getComputedStyle(c).getPropertyValue('--compass-radius')) || 0;
+      const compassRadius = cssRadius > 0 ? cssRadius : rad;
       const cx = s / 2, cy = s / 2;
 
       const fromAngle = currentMetarData.variableFrom;
@@ -2291,7 +2228,7 @@ function addWindToCompass(compassId) {
       svg.style.height = "100%";
       svg.style.pointerEvents = "none";
 
-      const arcRadius = rad * 0.9;
+      const arcRadius = Math.max(compassRadius - 6, 0);
       const startAngleRad = (fromAngle - 90) * Math.PI / 180;
       const endAngleRad = (toAngle - 90) * Math.PI / 180;
 
@@ -2306,9 +2243,9 @@ function addWindToCompass(compassId) {
 
       path.setAttribute("d", pathData);
       path.setAttribute("stroke", "#4A90E2");
-      path.setAttribute("stroke-width", "8");
+      path.setAttribute("stroke-width", "16");
       path.setAttribute("fill", "none");
-      path.setAttribute("stroke-linecap", "round");
+      path.setAttribute("stroke-linecap", "butt");
       path.setAttribute("opacity", "0.7");
 
       svg.appendChild(path);
@@ -2676,7 +2613,6 @@ function updateWeatherDisplay(data) {
   }
 
   document.getElementById('metarCode').textContent = data.raw;
-  updateCopyMetarButtonState(data.raw);
 
   if (data.pressure && data.pressure > 0) {
     const pressure = convertPressure(data.pressure);
@@ -3156,8 +3092,6 @@ function handleIcaoInput() {
       initializeDefaultCompassInfo(0);
       initializeDefaultCompassInfo(1);
 
-      updateCopyMetarButtonState('-');
-
       updateConnectionStatus('', 'Enter ICAO code');
 
     } else {
@@ -3314,29 +3248,6 @@ document.addEventListener('DOMContentLoaded', function() {
   applyTheme('auto');
   applyLanguage('en');
   handleIcaoInput();
-
-  const copyMetarBtn = document.getElementById('copyMetarBtn');
-  if (copyMetarBtn) {
-    copyMetarBtn.addEventListener('click', async () => {
-      const metarText = document.getElementById('metarCode')?.textContent?.trim();
-      if (!metarText || metarText === '-') return;
-
-      try {
-        const copied = await copyTextToClipboard(metarText);
-        if (copied) {
-          setCopyMetarButtonState(true);
-          if (copyMetarResetTimer) {
-            clearTimeout(copyMetarResetTimer);
-          }
-          copyMetarResetTimer = setTimeout(() => setCopyMetarButtonState(false), 2000);
-        }
-      } catch (error) {
-        console.warn('Unable to copy METAR:', error);
-      }
-    });
-  }
-
-  updateCopyMetarButtonState(document.getElementById('metarCode')?.textContent);
 
   document.getElementById('runwaySelect').addEventListener('change', function() {
     updateOppositeRunway();
