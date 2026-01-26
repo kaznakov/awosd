@@ -389,7 +389,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.0 (alpha)</div>
+<div class="version">v1.0.1 (alpha)</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -2009,25 +2009,76 @@ const weatherHybridDictionary = {
 
 const weatherIntensityMap = {
   "+": { en: "Heavy", ru: "Сильный" },
-  "-": { en: "Light", ru: "Слабый" }
+  "-": { en: "Light", ru: "Слабый" },
+  "VC": { en: "In the vicinity", ru: "В окрестности" }
 };
 
 const weatherDescriptorMap = {
+  MI: { en: "Shallow", ru: "Слабый" },
+  PR: { en: "Partial", ru: "Частичный" },
+  BC: { en: "Patches", ru: "Отдельные" },
+  DR: { en: "Low drifting", ru: "Слабый перенос" },
+  BL: { en: "Blowing", ru: "Поземный" },
   SH: { en: "Showers", ru: "Ливневый" },
   TS: { en: "Thunderstorm", ru: "Гроза" },
-  FZ: { en: "Freezing", ru: "Переохлаждённый" },
-  VC: { en: "In the vicinity", ru: "В окрестности" }
+  FZ: { en: "Freezing", ru: "Переохлаждённый" }
 };
 
 const weatherPhenomenaMap = {
   DZ: { en: "Drizzle", ru: "Морось" },
   RA: { en: "Rain", ru: "Дождь" },
   SN: { en: "Snow", ru: "Снег" },
+  SG: { en: "Snow grains", ru: "Снежные зёрна" },
+  IC: { en: "Ice crystals", ru: "Ледяные кристаллы" },
+  PL: { en: "Ice pellets", ru: "Ледяные иглы" },
+  GR: { en: "Hail", ru: "Град" },
+  GS: { en: "Small hail", ru: "Мелкий град" },
+  UP: { en: "Unknown precipitation", ru: "Неизвестные осадки" },
   BR: { en: "Mist", ru: "Дымка" },
   FG: { en: "Fog", ru: "Туман" },
   FU: { en: "Smoke", ru: "Дым" },
-  HZ: { en: "Haze", ru: "Мгла" }
+  VA: { en: "Volcanic ash", ru: "Вулканический пепел" },
+  DU: { en: "Dust", ru: "Пыль" },
+  SA: { en: "Sand", ru: "Песок" },
+  HZ: { en: "Haze", ru: "Мгла" },
+  PY: { en: "Spray", ru: "Брызги" },
+  PO: { en: "Dust whirls", ru: "Пылевые вихри" },
+  SQ: { en: "Squalls", ru: "Шквалы" },
+  FC: { en: "Funnel cloud", ru: "Воронкообразное облако" },
+  SS: { en: "Sandstorm", ru: "Песчаная буря" },
+  DS: { en: "Duststorm", ru: "Пыльная буря" }
 };
+
+function decodeWeatherToken(code, language = 'en') {
+  const match = code.match(/^(\+|-|VC)?(MI|PR|BC|DR|BL|SH|TS|FZ)?(.+)$/);
+  if (!match) return code;
+
+  const intensity = match[1] || '';
+  const descriptor = match[2] || '';
+  const phenomena = match[3] || '';
+  const intensityText = intensity ? weatherIntensityMap[intensity]?.[language] : '';
+  const descriptorText = descriptor ? weatherDescriptorMap[descriptor]?.[language] : '';
+  const phenomenonText = weatherPhenomenaMap[phenomena]?.[language] || phenomena;
+
+  if (descriptor === 'TS' && phenomenonText) {
+    const prefix = intensityText ? `${intensityText} ` : '';
+    return language === 'ru'
+      ? `${prefix}гроза с ${phenomenonText.toLowerCase()}`
+      : `${prefix}Thunderstorm with ${phenomenonText.toLowerCase()}`;
+  }
+
+  if (descriptor === 'SH' && phenomenonText) {
+    const prefix = intensityText ? `${intensityText} ` : '';
+    return language === 'ru'
+      ? `${prefix}${descriptorText} ${phenomenonText.toLowerCase()}`
+      : `${prefix}Showers of ${phenomenonText.toLowerCase()}`;
+  }
+
+  const parts = [intensityText, descriptorText, phenomenonText].filter(Boolean);
+  if (parts.length === 0) return code;
+
+  return parts.join(' ');
+}
 
 // ========== ЕДИНАЯ ОТРИСОВКА КОМПАСОВ ==========
 
@@ -2737,10 +2788,7 @@ function updateWeatherDisplay(data) {
   if (weatherEl) {
     if (data.weather && data.weather.length > 0) {
       const decodedWeather = data.weather.map(weatherCode => {
-        if (weatherHybridDictionary[weatherCode]) {
-          return weatherHybridDictionary[weatherCode][currentLanguage];
-        }
-        return weatherCode;
+        return decodeWeatherToken(weatherCode, currentLanguage);
       });
 
       const finalWeatherText = decodedWeather.join(', ');
@@ -3321,7 +3369,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 100);
   });
 
-  console.log('✅ Application initialized - v1.0.0 (alpha) - Hybrid METAR History (API + localStorage)');
+  console.log('✅ Application initialized - v1.0.1 (alpha) - Hybrid METAR History (API + localStorage)');
 });
 </script>
 
