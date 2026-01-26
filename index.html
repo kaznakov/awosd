@@ -389,7 +389,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.2 (alpha)</div>
+<div class="version">v1.0.3 (alpha)</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -1022,7 +1022,8 @@ function parseMetar(metarString) {
     temperature: null,
     dewpoint: null,
     pressure: 0,
-    runwayStates: []
+    runwayStates: [],
+    runwayWinds: {}
   };
 
   for (let i = 0; i < parts.length; i++) {
@@ -1156,8 +1157,10 @@ function parseMetar(metarString) {
   if (remarksSection) {
     const currentLang = document.getElementById('language')?.value || 'en';
     data.specialConditions = parseSpecialConditionsFromRemarks(remarksSection, currentLang);
+    data.runwayWinds = parseRunwayWindsFromRemarks(remarksSection);
   } else {
     data.specialConditions = { qfe: null, qbb: null, other: [] };
+    data.runwayWinds = {};
   }
 
   console.log(`📊 Parsed METAR runwayStates:`, data.runwayStates);
@@ -1246,6 +1249,35 @@ function parseSpecialConditionsFromRemarks(remarksString, language = 'ru') {
   }
 
   return result;
+}
+
+function parseRunwayWindsFromRemarks(remarksString) {
+  if (!remarksString || remarksString.trim() === '') return {};
+
+  const runwayWinds = {};
+  const parts = remarksString.split(/\s+/);
+
+  parts.forEach((part) => {
+    const match = part.match(/^R(\d{2}[LRC]?)\/(\d{3})(\d{2})(G(\d{2}))?(KT|MPS)$/);
+    if (!match) return;
+
+    const runway = match[1];
+    const direction = parseInt(match[2], 10);
+    const speed = parseInt(match[3], 10);
+    const gust = match[5] ? parseInt(match[5], 10) : 0;
+    const unit = match[6] === 'MPS' ? 'м/с' : 'kt';
+
+    runwayWinds[runway] = {
+      direction,
+      speed,
+      gust,
+      unit,
+      calm: speed === 0,
+      variable: false
+    };
+  });
+
+  return runwayWinds;
 }
 
 function updateSpecialConditionsLanguage(lang) {
@@ -2249,15 +2281,30 @@ function addWindToCompass(compassId) {
   const container = c.parentElement;
   c.querySelectorAll('.wind-arrow, .wind-sector').forEach((el) => el.remove());
 
+  let runwayIdent = '';
+  if (compassId === 'compass') {
+    runwayIdent = document.getElementById('runwaySelect')?.value || '';
+  } else {
+    runwayIdent = document.getElementById('runwayDisplay2')?.textContent || '';
+  }
+
+  const runwayKey = window.runwayStateDecoder?.extractRunwayNumber
+    ? window.runwayStateDecoder.extractRunwayNumber(runwayIdent)
+    : runwayIdent;
+  const runwayWind = runwayKey && currentMetarData.runwayWinds
+    ? currentMetarData.runwayWinds[runwayKey]
+    : null;
+  const windSource = runwayWind || currentMetarData.wind;
+  const useVariableWind = !runwayWind && currentMetarData.wind.variable;
+  let windDir = windSource.calm ? 0 : windSource.direction;
+  let windSpeed = windSource.calm ? 0 : windSource.speed;
+  let windGust = windSource.gust || 0;
+  let windUnit = runwayWind ? runwayWind.unit : (currentMetarData.windUnit || 'kt');
+
   const windDisplay = container.querySelector('.wind-display');
   if (windDisplay) {
-    const windDir = currentMetarData.wind.calm ? 0 : currentMetarData.wind.direction;
-    let windSpeed = currentMetarData.wind.calm ? 0 : currentMetarData.wind.speed;
-    let windGust = currentMetarData.wind.gust || 0;
-    let windUnit = currentMetarData.windUnit || 'kt';
-
     // ПРОВЕРКА НА ШТИЛЬ
-    if (currentMetarData.wind.calm || windSpeed === 0) {
+    if (windSource.calm || windSpeed === 0) {
       const currentLang = document.getElementById('language')?.value || 'en';
       const calmText = currentLang === 'ru' ? 'Тихо' : 'Calm';
 
@@ -2326,9 +2373,9 @@ function addWindToCompass(compassId) {
     windDisplay.querySelector('.wind-unit').textContent = windUnit;
   }
 
-  if (currentMetarData.wind.calm || currentMetarData.wind.speed === 0) return;
+  if (windSource.calm || windSpeed === 0) return;
 
-  if (currentMetarData.wind.variable) {
+  if (useVariableWind) {
     const ws = document.createElement('div');
     ws.className = 'wind-sector variable';
 
@@ -2394,7 +2441,7 @@ function addWindToCompass(compassId) {
   const rad = cssRadius > 0 ? cssRadius : (s / 2);
   const cx = s / 2, cy = s / 2;
 
-  const windAngle = currentMetarData.wind.direction;
+  const windAngle = windDir;
   const windRad = (windAngle - 90) * Math.PI / 180;
   const compassCircleRadius = rad - 2;
   const tipLength = 31.2;
@@ -3084,11 +3131,27 @@ function calculateWindComponents(windDir, windSpeed, runwayHeading) {
 function updateWindComponents() {
   if (!currentMetarData || !currentRunwayData) return;
 
-  const windDir = currentMetarData.wind.calm ? 0 : currentMetarData.wind.direction;
-  const windSpeed = currentMetarData.wind.calm ? 0 : currentMetarData.wind.speed;
-
   const selectedRunway1 = document.getElementById('runwaySelect').value;
   if (selectedRunway1) {
+    const runwayKey = window.runwayStateDecoder?.extractRunwayNumber
+      ? window.runwayStateDecoder.extractRunwayNumber(selectedRunway1)
+      : selectedRunway1;
+    const runwayWind = runwayKey && currentMetarData.runwayWinds
+      ? currentMetarData.runwayWinds[runwayKey]
+      : null;
+    let windDir = runwayWind ? runwayWind.direction : (currentMetarData.wind.calm ? 0 : currentMetarData.wind.direction);
+    let windSpeed = runwayWind ? runwayWind.speed : (currentMetarData.wind.calm ? 0 : currentMetarData.wind.speed);
+    let windUnit = runwayWind ? runwayWind.unit : currentMetarData.windUnit;
+
+    if (userPreferredWindUnit && windUnit && userPreferredWindUnit !== windUnit) {
+      if (userPreferredWindUnit === 'kt' && windUnit === 'м/с') {
+        windSpeed = Math.round(windSpeed * 1.944);
+      } else if (userPreferredWindUnit === 'м/с' && windUnit === 'kt') {
+        windSpeed = Math.round(windSpeed / 1.944);
+      }
+      windUnit = userPreferredWindUnit;
+    }
+
     const runwayHeading = getRunwayHeading(selectedRunway1);
     const components1 = calculateWindComponents(windDir, windSpeed, runwayHeading);
 
@@ -3108,6 +3171,25 @@ function updateWindComponents() {
 
   const selectedRunway2 = document.getElementById('runwayDisplay2').textContent;
   if (selectedRunway2 && selectedRunway2 !== '--') {
+    const runwayKey = window.runwayStateDecoder?.extractRunwayNumber
+      ? window.runwayStateDecoder.extractRunwayNumber(selectedRunway2)
+      : selectedRunway2;
+    const runwayWind = runwayKey && currentMetarData.runwayWinds
+      ? currentMetarData.runwayWinds[runwayKey]
+      : null;
+    let windDir = runwayWind ? runwayWind.direction : (currentMetarData.wind.calm ? 0 : currentMetarData.wind.direction);
+    let windSpeed = runwayWind ? runwayWind.speed : (currentMetarData.wind.calm ? 0 : currentMetarData.wind.speed);
+    let windUnit = runwayWind ? runwayWind.unit : currentMetarData.windUnit;
+
+    if (userPreferredWindUnit && windUnit && userPreferredWindUnit !== windUnit) {
+      if (userPreferredWindUnit === 'kt' && windUnit === 'м/с') {
+        windSpeed = Math.round(windSpeed * 1.944);
+      } else if (userPreferredWindUnit === 'м/с' && windUnit === 'kt') {
+        windSpeed = Math.round(windSpeed / 1.944);
+      }
+      windUnit = userPreferredWindUnit;
+    }
+
     const runwayHeading = getRunwayHeading(selectedRunway2);
     const components2 = calculateWindComponents(windDir, windSpeed, runwayHeading);
 
@@ -3398,7 +3480,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 100);
   });
 
-  console.log('✅ Application initialized - v1.0.2 (alpha) - Hybrid METAR History (API + localStorage)');
+  console.log('✅ Application initialized - v1.0.3 (alpha) - Hybrid METAR History (API + localStorage)');
 });
 </script>
 
