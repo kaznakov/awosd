@@ -389,7 +389,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.1 (alpha)</div>
+<div class="version">v1.0.2 (alpha)</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -1104,8 +1104,8 @@ function parseMetar(metarString) {
 
     // ПАРСИНГ СОСТОЯНИЯ ВПП - формат R12L/620142 или R12/620142
     // R - префикс, 12 - номер ВПП, L/R/C - индикатор (опционально), 620142 - состояние
-    if (part.match(/^R\d{2}[LRC]?\/\d{6}$/)) {
-      const runwayStateMatch = part.match(/^R(\d{2}[LRC]?)\/(\d)(\d)(\d{2})(\d{2})$/);
+    if (part.match(/^R\d{2}[LRC]?\/\d{2}(?:\d{2}|\/\/)(?:\d{2}|\/\/)$/)) {
+      const runwayStateMatch = part.match(/^R(\d{2}[LRC]?)\/(\d)(\d)(\d{2}|\/\/)(\d{2}|\/\/)$/);
       if (runwayStateMatch) {
         console.log(`✅ Найдено состояние ВПП: ${part}`);
         data.runwayStates.push({
@@ -1120,8 +1120,8 @@ function parseMetar(metarString) {
     }
 
     // ПАРСИНГ СОСТОЯНИЯ ВПП - формат 12L/620142 или 12/620142 (без префикса R)
-    if (part.match(/^\d{2}[LRC]?\/\d{6}$/)) {
-      const runwayStateMatch = part.match(/^(\d{2}[LRC]?)\/(\d)(\d)(\d{2})(\d{2})$/);
+    if (part.match(/^\d{2}[LRC]?\/\d{2}(?:\d{2}|\/\/)(?:\d{2}|\/\/)$/)) {
+      const runwayStateMatch = part.match(/^(\d{2}[LRC]?)\/(\d)(\d)(\d{2}|\/\/)(\d{2}|\/\/)$/);
       if (runwayStateMatch) {
         console.log(`✅ Найдено состояние ВПП: ${part}`);
         data.runwayStates.push({
@@ -1136,8 +1136,8 @@ function parseMetar(metarString) {
     }
 
     // ПАРСИНГ СОСТОЯНИЯ ВСЕХ ВПП - формат 88/620142
-    if (part.match(/^88\/\d{6}$/)) {
-      const allRunwaysMatch = part.match(/^(88)\/(\d)(\d)(\d{2})(\d{2})$/);
+    if (part.match(/^88\/\d{2}(?:\d{2}|\/\/)(?:\d{2}|\/\/)$/)) {
+      const allRunwaysMatch = part.match(/^(88)\/(\d)(\d)(\d{2}|\/\/)(\d{2}|\/\/)$/);
       if (allRunwaysMatch) {
         console.log(`✅ Найдено состояние всех ВПП: ${part}`);
         data.runwayStates.push({
@@ -1714,9 +1714,21 @@ class RunwayStateDecoder {
       if (matchingState) {
         console.log(`✅ Found matching state:`, matchingState);
         return this.parseStateFromObject(matchingState);
-      } else {
-        console.log(`⚠️ No matching state found for runway ${runwayNumber}`);
       }
+
+      const oppositeRunway = this.getOppositeRunway(runwayIdent);
+      if (oppositeRunway) {
+        const oppositeMatch = currentMetarData.runwayStates.find(state => {
+          const matches = state.runway === oppositeRunway;
+          console.log(`  Checking opposite runway ${state.runway}: ${matches ? '✅ MATCH' : '❌'}`);
+          return matches;
+        });
+        if (oppositeMatch) {
+          console.log(`✅ Found opposite runway state:`, oppositeMatch);
+          return this.parseStateFromObject(oppositeMatch);
+        }
+      }
+      console.log(`⚠️ No matching state found for runway ${runwayNumber}`);
     } else {
       console.log(`⚠️ No runway states in currentMetarData`);
     }
@@ -1735,6 +1747,23 @@ class RunwayStateDecoder {
       return number.padStart(2, '0') + indicator;
     }
     return '00';
+  }
+
+  getOppositeRunway(runwayIdent) {
+    const cleaned = this.extractRunwayNumber(runwayIdent);
+    if (!cleaned || cleaned === '00') return null;
+
+    const numberMatch = cleaned.match(/^(\d{2})/);
+    if (!numberMatch) return null;
+
+    const indicator = cleaned.match(/[LRC]$/)?.[0] || '';
+    const number = parseInt(numberMatch[1], 10);
+    if (!number) return null;
+
+    const oppositeNumber = ((number + 17) % 36) + 1;
+    const oppositeIndicator = indicator === 'L' ? 'R' : indicator === 'R' ? 'L' : indicator;
+
+    return oppositeNumber.toString().padStart(2, '0') + oppositeIndicator;
   }
 
   parseStateFromObject(stateObject) {
@@ -3369,7 +3398,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 100);
   });
 
-  console.log('✅ Application initialized - v1.0.1 (alpha) - Hybrid METAR History (API + localStorage)');
+  console.log('✅ Application initialized - v1.0.2 (alpha) - Hybrid METAR History (API + localStorage)');
 });
 </script>
 
