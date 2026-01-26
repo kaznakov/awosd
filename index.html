@@ -389,7 +389,7 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="header-buttons">
-<div class="version">v1.0.3 (alpha)</div>
+<div class="version">v1.0.4 (alpha)</div>
 <button id="aboutBtn" class="header-btn">
 <span class="en">About</span>
 <span class="ru" style="display:none">О проекте</span>
@@ -748,7 +748,7 @@ function convertPressure(hpa) {
   return {
     hpa: hpa,
     mmhg: Math.round(hpa * 0.750062 * 1) / 1,
-    inhg: Math.round(hpa * 0.02953 * 100) / 100
+    inhg: (hpa * 0.02953).toFixed(2)
   };
 }
 
@@ -1684,7 +1684,7 @@ class RunwayStateDecoder {
       '7': { en: 'Ice', ru: 'Лёд' },
       '8': { en: 'Frozen ruts', ru: 'Замёрзшие колеи' },
       '9': { en: 'Frozen ruts/ridges', ru: 'Замёрзшие колеи/гребни' },
-      '/': { en: 'Not reported', ru: 'Не сообщается' }
+      '/': { en: '-', ru: '-' }
     };
 
     this.extentCodes = {
@@ -1692,7 +1692,7 @@ class RunwayStateDecoder {
       '2': { en: '11-25%', ru: '11-25%' },
       '5': { en: '26-50%', ru: '26-50%' },
       '9': { en: '51-100%', ru: '51-100%' },
-      '/': { en: 'Not reported', ru: 'Не сообщается' }
+      '/': { en: '-', ru: '-' }
     };
 
     this.depthCodes = {
@@ -1705,7 +1705,7 @@ class RunwayStateDecoder {
       '97': { en: '35 cm', ru: '35 см' },
       '98': { en: '40 cm or more', ru: '40 см или более' },
       '99': { en: 'Not operationally significant', ru: 'Не существенно' },
-      '//': { en: 'Not reported', ru: 'Не сообщается' }
+      '//': { en: '-', ru: '-' }
     };
 
     this.frictionCodes = {
@@ -1715,7 +1715,7 @@ class RunwayStateDecoder {
       '94': { en: 'Medium/Good', ru: 'Среднее/Хорошее' },
       '95': { en: 'Good', ru: 'Хорошее' },
       '99': { en: 'Unreliable', ru: 'Недостоверно' },
-      '//': { en: 'Not reported', ru: 'Не сообщается' }
+      '//': { en: '-', ru: '-' }
     };
   }
 
@@ -1836,7 +1836,7 @@ class RunwayStateDecoder {
       return this.language === 'ru' ? `${numCode} мм` : `${numCode} mm`;
     }
 
-    return this.language === 'ru' ? 'Не сообщается' : 'Not reported';
+    return '-';
   }
 
   decodeFriction(code) {
@@ -1849,7 +1849,7 @@ class RunwayStateDecoder {
       return (numCode / 100).toFixed(2);
     }
 
-    return this.language === 'ru' ? 'Не сообщается' : 'Not reported';
+    return '-';
   }
 
   getDefaultState() {
@@ -1909,7 +1909,7 @@ class CloudDecoder {
   decodeCloudiness(metarClouds) {
     if (!metarClouds || metarClouds.length === 0) {
       return {
-        summary: this.language === 'ru' ? 'Нет данных' : 'No data',
+        summary: '-',
         layers: [],
         ceiling: null,
         significantClouds: [],
@@ -1987,7 +1987,7 @@ class CloudDecoder {
 
   generateCloudSummary(layers) {
     if (layers.length === 0) {
-      return this.language === 'ru' ? 'Нет данных' : 'No data';
+      return '-';
     }
 
     const layerDescriptions = layers.map(layer => {
@@ -3480,7 +3480,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 100);
   });
 
-  console.log('✅ Application initialized - v1.0.3 (alpha) - Hybrid METAR History (API + localStorage)');
+  console.log('✅ Application initialized - v1.0.4 (alpha) - Hybrid METAR History (API + localStorage)');
 });
 </script>
 
