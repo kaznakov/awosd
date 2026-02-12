@@ -1053,12 +1053,23 @@ function parseMetar(metarString) {
   };
 
   let inRemarks = false;
+  let inForecastSection = false;
 
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i];
 
     if (part === 'RMK') {
       inRemarks = true;
+      inForecastSection = false;
+      continue;
+    }
+
+    if (!inRemarks && part.match(/^(NOSIG|TEMPO|BECMG|PROB\d{2})$/)) {
+      inForecastSection = true;
+      continue;
+    }
+
+    if (!inRemarks && inForecastSection) {
       continue;
     }
 
@@ -1277,9 +1288,26 @@ function parseDirectionalVisibilityFromMetar(metarString, language = 'ru') {
 
   const parts = metarString.split(/\s+/);
   const result = [];
+  let inRemarks = false;
+  let inForecastSection = false;
 
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i];
+
+    if (part === 'RMK') {
+      inRemarks = true;
+      inForecastSection = false;
+      continue;
+    }
+
+    if (!inRemarks && part.match(/^(NOSIG|TEMPO|BECMG|PROB\d{2})$/)) {
+      inForecastSection = true;
+      continue;
+    }
+
+    if (!inRemarks && inForecastSection) {
+      continue;
+    }
     const directionalVisMatch = part.match(/^(\d{4})(N|S|E|W|NE|NW|SE|SW)$/);
     if (!directionalVisMatch) continue;
 
