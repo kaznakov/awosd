@@ -836,18 +836,34 @@ function parseVisibilityToken(parts, index) {
 }
 
 
+
+function getRegionalUnitProfile() {
+  const country = (window.airportData?.country || '').toUpperCase();
+  const imperialAviationCountries = new Set(['US', 'CA', 'PR', 'GU', 'VI']);
+  const isImperial = imperialAviationCountries.has(country);
+
+  return {
+    visibilityUnit: isImperial ? 'sm' : 'm',
+    rvrUnit: isImperial ? 'ft' : 'm'
+  };
+}
+
+function getLocalizedDistanceUnit(unit, language = 'en') {
+  if (unit === 'sm') return language === 'ru' ? 'мили' : 'sm';
+  if (unit === 'ft') return language === 'ru' ? 'фт' : 'ft';
+  return language === 'ru' ? 'м' : 'm';
+}
+
 function formatVisibilityForDisplay(data, language = 'en') {
   const rawValue = data?.visibility;
+  const regionalDefaults = getRegionalUnitProfile();
+  const unit = data?.visibilityUnit || regionalDefaults.visibilityUnit;
+
   if (rawValue === null || rawValue === undefined || rawValue === '') {
-    return { value: '-', unit: language === 'ru' ? 'м' : 'm' };
+    return { value: '-', unit: getLocalizedDistanceUnit(unit, language) };
   }
 
-  const unit = data?.visibilityUnit || 'm';
-  if (unit === 'sm') {
-    return { value: String(rawValue), unit: language === 'ru' ? 'мили' : 'sm' };
-  }
-
-  return { value: String(rawValue), unit: language === 'ru' ? 'м' : 'm' };
+  return { value: String(rawValue), unit: getLocalizedDistanceUnit(unit, language) };
 }
 
 function updateConnectionStatus(status, text) {
@@ -3164,9 +3180,13 @@ function updateRVRDisplay(compassIndex) {
   const rvrUnits = rvrRow.querySelector('.units');
   if (!rvrField || !rvrUnits) return;
 
+  const lang = document.getElementById('language')?.value || 'ru';
+  const regionalDefaults = getRegionalUnitProfile();
+  const defaultRvrUnit = getLocalizedDistanceUnit(regionalDefaults.rvrUnit, lang);
+
   if (!currentMetarData || !currentMetarData.rvrReports) {
     rvrField.textContent = '-';
-    rvrUnits.textContent = 'м';
+    rvrUnits.textContent = defaultRvrUnit;
     return;
   }
 
@@ -3179,7 +3199,7 @@ function updateRVRDisplay(compassIndex) {
 
   if (!runwayIdent || runwayIdent === '--') {
     rvrField.textContent = '-';
-    rvrUnits.textContent = 'м';
+    rvrUnits.textContent = defaultRvrUnit;
     return;
   }
 
@@ -3194,13 +3214,12 @@ function updateRVRDisplay(compassIndex) {
     || null;
   if (!rvr) {
     rvrField.textContent = '-';
-    rvrUnits.textContent = 'м';
+    rvrUnits.textContent = defaultRvrUnit;
     return;
   }
 
-  const lang = document.getElementById('language')?.value || 'ru';
   rvrField.textContent = formatRVRValue(rvr);
-  rvrUnits.textContent = rvr.unit === 'ft' ? (lang === 'ru' ? 'фт' : 'ft') : (lang === 'ru' ? 'м' : 'm');
+  rvrUnits.textContent = getLocalizedDistanceUnit(rvr.unit === 'ft' ? 'ft' : 'm', lang);
 }
 
 async function updateQFEForSelectedRunways() {
@@ -3721,6 +3740,16 @@ function handleIcaoInput() {
 
       try {
         const api = await getAPI();
+
+        const airportInfo = api.getAirportInfo(i);
+        if (airportInfo) {
+          window.airportData = {
+            ...(window.airportData || {}),
+            icao: i,
+            country: airportInfo.country || airportInfo.iso_country || '',
+            iso_region: airportInfo.iso_region || ''
+          };
+        }
 
         updateConnectionStatus('loading', `Loading data for ${i}...`);
 
