@@ -1283,13 +1283,26 @@ function parseDirectionalVisibilityFromMetar(metarString, language = 'ru') {
     const directionalVisMatch = part.match(/^(\d{4})(N|S|E|W|NE|NW|SE|SW)$/);
     if (!directionalVisMatch) continue;
 
-    const value = directionalVisMatch[1];
+    const value = parseInt(directionalVisMatch[1], 10).toString();
     const direction = directionalVisMatch[2];
-    const code = `${value}${direction}`;
+    const code = directionalVisMatch[0];
+
+    const directionMap = {
+      en: {
+        N: 'North', S: 'South', E: 'East', W: 'West',
+        NE: 'North-East', NW: 'North-West', SE: 'South-East', SW: 'South-West'
+      },
+      ru: {
+        N: 'Север', S: 'Юг', E: 'Восток', W: 'Запад',
+        NE: 'Северо-восток', NW: 'Северо-запад', SE: 'Юго-восток', SW: 'Юго-запад'
+      }
+    };
+
+    const directionText = directionMap[language]?.[direction] || direction;
 
     result.push({
       code,
-      decoded: code
+      decoded: `${value} ${directionText}`
     });
   }
 
