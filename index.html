@@ -1110,8 +1110,18 @@ function parseMetar(metarString) {
       data.pressure = parseInt(part.substring(1));
     }
 
-    if (part === 'WS' && i + 1 < parts.length) {
-      const runwayMatch = parts[i + 1].match(/^R(\d{2}[LRC]?)$/);
+    if (part === 'WS') {
+      // WS ALL RWY
+      if (i + 2 < parts.length && parts[i + 1] === 'ALL' && parts[i + 2] === 'RWY') {
+        if (!data.runwayAlerts.ALL) {
+          data.runwayAlerts.ALL = [];
+        }
+        data.runwayAlerts.ALL.push('WS');
+        i += 2;
+      }
+
+      // WS R22
+      const runwayMatch = i + 1 < parts.length ? parts[i + 1].match(/^R(\d{2}[LRC]?)$/) : null;
       if (runwayMatch) {
         const runway = runwayMatch[1];
         const normalizedRunway = runway.replace(/[LRC]/g, '');
@@ -2836,8 +2846,18 @@ function updateRunwayAlertDisplay(compassIndex) {
     ? window.runwayStateDecoder.extractRunwayNumber(runwayIdent)
     : runwayIdent.replace(/[LRC]/g, '');
 
-  const alerts = currentMetarData.runwayAlerts[runwayKey];
-  alertElement.textContent = alerts && alerts.length > 0 ? alerts.join(', ') : '-';
+  const runwayAlerts = currentMetarData.runwayAlerts[runwayKey] || [];
+  const allRunwayAlerts = currentMetarData.runwayAlerts.ALL || [];
+  const combinedAlerts = [...new Set([...allRunwayAlerts, ...runwayAlerts])];
+
+  const decodeAlert = (alertCode) => {
+    if (alertCode === 'WS') return 'WIND SHEAR (СДВИГ ВЕТРА)';
+    return alertCode;
+  };
+
+  alertElement.textContent = combinedAlerts.length > 0
+    ? combinedAlerts.map(decodeAlert).join(', ')
+    : '-';
 }
 
 async function updateQFEForSelectedRunways() {
