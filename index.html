@@ -1048,7 +1048,8 @@ function parseMetar(metarString) {
     pressure: 0,
     runwayStates: [],
     runwayWinds: {},
-    runwayAlerts: {}
+    runwayAlerts: {},
+    rvrReports: {}
   };
 
   let inRemarks = false;
@@ -1112,6 +1113,17 @@ function parseMetar(metarString) {
 
     if (part.match(/^Q\d{4}$/)) {
       data.pressure = parseInt(part.substring(1));
+    }
+
+    // ПАРСИНГ RVR - формат R10/1200, R10/P1500, R10/0600V1000U, R10/0600FT
+    const rvrMatch = part.match(/^R(\d{2}[LRC]?)\/([MP]?\d{4}(?:V[MP]?\d{4})?)(FT)?([UDN])?$/);
+    if (rvrMatch) {
+      const runway = rvrMatch[1].replace(/[LRC]/g, '');
+      data.rvrReports[runway] = {
+        value: rvrMatch[2],
+        unit: rvrMatch[3] ? 'ft' : 'm',
+        trend: rvrMatch[4] || null
+      };
     }
 
     if (part === 'WS') {
@@ -1434,7 +1446,8 @@ function generateDemoData(icao) {
     temperature: 12,
     dewpoint: 8,
     pressure: 1013,
-    runwayAlerts: {}
+    runwayAlerts: {},
+    rvrReports: {}
   };
 }
 
@@ -2877,6 +2890,77 @@ function updateRunwayAlertDisplay(compassIndex) {
     : '-';
 }
 
+function formatRVRValue(rvr) {
+  if (!rvr || !rvr.value) return '-';
+
+  const normalize = (segment) => {
+    if (segment.startsWith('M')) return `<${segment.slice(1)}`;
+    if (segment.startsWith('P')) return `>${segment.slice(1)}`;
+    return segment;
+  };
+
+  let valueText = rvr.value;
+  if (rvr.value.includes('V')) {
+    const [from, to] = rvr.value.split('V');
+    valueText = `${normalize(from)}-${normalize(to)}`;
+  } else {
+    valueText = normalize(rvr.value);
+  }
+
+  const trendMap = { U: '↑', D: '↓', N: '→' };
+  if (rvr.trend && trendMap[rvr.trend]) {
+    valueText += ` ${trendMap[rvr.trend]}`;
+  }
+
+  return valueText;
+}
+
+function updateRVRDisplay(compassIndex) {
+  const compassInfo = document.querySelectorAll('.compass-info')[compassIndex];
+  if (!compassInfo) return;
+
+  const rvrRow = compassInfo.querySelector('.rvr-row');
+  if (!rvrRow) return;
+
+  const rvrField = rvrRow.querySelector('.data-field');
+  const rvrUnits = rvrRow.querySelector('.units');
+  if (!rvrField || !rvrUnits) return;
+
+  if (!currentMetarData || !currentMetarData.rvrReports) {
+    rvrField.textContent = '-';
+    rvrUnits.textContent = 'м';
+    return;
+  }
+
+  let runwayIdent = '';
+  if (compassIndex === 0) {
+    runwayIdent = document.getElementById('runwaySelect')?.value;
+  } else {
+    runwayIdent = document.getElementById('runwayDisplay2')?.textContent;
+  }
+
+  if (!runwayIdent || runwayIdent === '--') {
+    rvrField.textContent = '-';
+    rvrUnits.textContent = 'м';
+    return;
+  }
+
+  const runwayKey = window.runwayStateDecoder?.extractRunwayNumber
+    ? window.runwayStateDecoder.extractRunwayNumber(runwayIdent)
+    : runwayIdent.replace(/[LRC]/g, '');
+
+  const rvr = currentMetarData.rvrReports[runwayKey] || null;
+  if (!rvr) {
+    rvrField.textContent = '-';
+    rvrUnits.textContent = 'м';
+    return;
+  }
+
+  const lang = document.getElementById('language')?.value || 'ru';
+  rvrField.textContent = formatRVRValue(rvr);
+  rvrUnits.textContent = rvr.unit === 'ft' ? (lang === 'ru' ? 'фт' : 'ft') : (lang === 'ru' ? 'м' : 'm');
+}
+
 async function updateQFEForSelectedRunways() {
   if (!currentMetarData || !currentRunwayData) return;
 
@@ -3030,6 +3114,8 @@ function updateWeatherDisplay(data) {
   }
   updateRunwayAlertDisplay(0);
   updateRunwayAlertDisplay(1);
+  updateRVRDisplay(0);
+  updateRVRDisplay(1);
 
   updateSunriseSunset();
   if (currentRunwayData) {
@@ -3113,6 +3199,8 @@ async function updateRunwayOptions(icao) {
     updateRunwayStateDisplay(1);
     updateRunwayAlertDisplay(0);
     updateRunwayAlertDisplay(1);
+    updateRVRDisplay(0);
+    updateRVRDisplay(1);
 
     updateConnectionStatus('connected', `${uniqueRunways.length} runways loaded`);
 
@@ -3147,6 +3235,8 @@ function updateOppositeRunway() {
   updateRunwayStateDisplay(1);
   updateRunwayAlertDisplay(0);
   updateRunwayAlertDisplay(1);
+  updateRVRDisplay(0);
+  updateRVRDisplay(1);
 }
 
 function getOppositeRunway(selectedRunway) {
