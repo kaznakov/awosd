@@ -1118,12 +1118,21 @@ function parseMetar(metarString) {
     // ПАРСИНГ RVR - формат R10/1200, R10/P1500, R10/0600V1000U, R10/0600FT
     const rvrMatch = part.match(/^R(\d{2}[LRC]?)\/([MP]?\d{4}(?:V[MP]?\d{4})?)(FT)?([UDN])?$/);
     if (rvrMatch) {
-      const runway = rvrMatch[1].replace(/[LRC]/g, '');
-      data.rvrReports[runway] = {
+      const runwayExact = rvrMatch[1];
+      const runwayNormalized = runwayExact.replace(/[LRC]/g, '');
+      const rvrData = {
         value: rvrMatch[2],
         unit: rvrMatch[3] ? 'ft' : 'm',
         trend: rvrMatch[4] || null
       };
+
+      // Приоритетно храним точное соответствие ВПП (например, 05R)
+      data.rvrReports[runwayExact] = rvrData;
+
+      // И добавляем fallback без L/R/C для случаев, когда в селекторе нет индикатора
+      if (!data.rvrReports[runwayNormalized]) {
+        data.rvrReports[runwayNormalized] = rvrData;
+      }
     }
 
     if (part === 'WS') {
@@ -2947,9 +2956,12 @@ function updateRVRDisplay(compassIndex) {
 
   const runwayKey = window.runwayStateDecoder?.extractRunwayNumber
     ? window.runwayStateDecoder.extractRunwayNumber(runwayIdent)
-    : runwayIdent.replace(/[LRC]/g, '');
+    : runwayIdent.trim();
+  const runwayKeyNormalized = runwayKey.replace(/[LRC]/g, '');
 
-  const rvr = currentMetarData.rvrReports[runwayKey] || null;
+  const rvr = currentMetarData.rvrReports[runwayKey]
+    || currentMetarData.rvrReports[runwayKeyNormalized]
+    || null;
   if (!rvr) {
     rvrField.textContent = '-';
     rvrUnits.textContent = 'м';
