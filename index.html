@@ -1452,8 +1452,17 @@ function buildSpecialConditionsText(specialConditions, language = 'ru') {
 async function fetchMetarData(icao) {
   updateConnectionStatus('loading', 'Loading METAR...');
 
+  let timeoutId = null;
+
   try {
-    const response = await fetch(`https://metar.vatsim.net/${icao.toUpperCase()}`);
+    const controller = new AbortController();
+    const timeoutMs = 10000;
+    timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    const response = await fetch(`https://metar.vatsim.net/${icao.toUpperCase()}`, {
+      signal: controller.signal
+    });
+
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const metarText = await response.text();
@@ -1473,6 +1482,8 @@ async function fetchMetarData(icao) {
     console.error('METAR fetch error:', error);
     updateConnectionStatus('error', 'METAR error');
     return generateDemoData(icao);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
   }
 }
 
