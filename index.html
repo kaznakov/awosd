@@ -1481,6 +1481,53 @@ function parseDirectionalVisibilityFromMetar(metarString, language = 'ru') {
   return result;
 }
 
+
+function parseFaaRemarksFromTokens(parts, language = 'ru') {
+  const decoded = [];
+
+  const pushDecoded = (code, ruText, enText) => {
+    decoded.push({ code, decoded: language === 'ru' ? ruText : enText });
+  };
+
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+
+    if (/^AO[12]$/.test(part)) {
+      const text = part === 'AO1'
+        ? { ru: 'Автоматическая станция без датчика осадков', en: 'Automated station without precipitation discriminator' }
+        : { ru: 'Автоматическая станция с датчиком осадков', en: 'Automated station with precipitation discriminator' };
+      pushDecoded(part, text.ru, text.en);
+      continue;
+    }
+
+    if (/^SLP\d{3}$/.test(part)) {
+      const slpRaw = parseInt(part.slice(3), 10);
+      if (!Number.isNaN(slpRaw)) {
+        const slpHpa = (slpRaw >= 500 ? 900 : 1000) + slpRaw / 10;
+        pushDecoded(part, `SLP ${(slpHpa).toFixed(1)} гПа`, `SLP ${(slpHpa).toFixed(1)} hPa`);
+      }
+      continue;
+    }
+
+    if (/^PK$/.test(part) && parts[i + 1] === 'WND' && /^\d{3}\d{2,3}\/\d{2,4}$/.test(parts[i + 2] || '')) {
+      const token = parts[i + 2];
+      const m = token.match(/^(\d{3})(\d{2,3})\/(\d{2,4})$/);
+      if (m) {
+        const dir = m[1];
+        const speed = m[2];
+        const minute = m[3].slice(-2);
+        pushDecoded(`PK WND ${token}`,
+          `Порыв ветра ${dir}° ${speed} kt в :${minute}`,
+          `Peak wind ${dir}° ${speed} kt at :${minute}`);
+      }
+      i += 2;
+      continue;
+    }
+  }
+
+  return decoded;
+}
+
 function parseSpecialConditionsFromRemarks(remarksString, language = 'ru') {
   if (!remarksString || remarksString.trim() === '') {
     return { qfe: null, qbb: null, other: [] };
@@ -1490,6 +1537,11 @@ function parseSpecialConditionsFromRemarks(remarksString, language = 'ru') {
 
   const result = { qfe: null, qbb: null, other: [] };
   const parts = remarksString.split(/\s+/);
+
+  const faaDecoded = parseFaaRemarksFromTokens(parts, language);
+  if (faaDecoded.length > 0) {
+    result.other.push(...faaDecoded);
+  }
 
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i];
@@ -2058,12 +2110,7 @@ class RunwayStateDecoder {
     };
 
     this.frictionCodes = {
-      '91': { en: 'Poor', ru: 'Плохое' },
-      '92': { en: 'Medium/Poor', ru: 'Среднее/Плохое' },
-      '93': { en: 'Medium', ru: 'Среднее' },
-      '94': { en: 'Medium/Good', ru: 'Среднее/Хорошее' },
-      '95': { en: 'Good', ru: 'Хорошее' },
-      '99': { en: 'Unreliable', ru: 'Недостоверно' },
+      '99': { en: '-', ru: '-' },
       '//': { en: '-', ru: '-' }
     };
   }
@@ -2193,9 +2240,17 @@ class RunwayStateDecoder {
       return this.frictionCodes[code][this.language];
     }
 
-    const numCode = parseInt(code);
-    if (!isNaN(numCode) && numCode >= 0 && numCode <= 90) {
-      return (numCode / 100).toFixed(2);
+    if (code && /^\d{2}$/.test(code)) {
+      const numCode = parseInt(code, 10);
+
+      if (numCode >= 0 && numCode <= 90) {
+        return (numCode / 100).toFixed(2);
+      }
+
+      // 91-95 historically encode braking-action groups, but UI requirement is numeric-only display
+      if (numCode >= 91 && numCode <= 95) {
+        return code;
+      }
     }
 
     return '-';
