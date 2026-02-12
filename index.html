@@ -1120,17 +1120,18 @@ function parseMetar(metarString) {
     if (rvrMatch) {
       const runwayExact = rvrMatch[1];
       const runwayNormalized = runwayExact.replace(/[LRC]/g, '');
+      const hasSide = /[LRC]$/.test(runwayExact);
       const rvrData = {
         value: rvrMatch[2],
         unit: rvrMatch[3] ? 'ft' : 'm',
         trend: rvrMatch[4] || null
       };
 
-      // Приоритетно храним точное соответствие ВПП (например, 05R)
+      // Для R05R/R05L храним только точный ключ, чтобы не протекало на противоположную ВПП
       data.rvrReports[runwayExact] = rvrData;
 
-      // И добавляем fallback без L/R/C для случаев, когда в селекторе нет индикатора
-      if (!data.rvrReports[runwayNormalized]) {
+      // fallback без индикатора только если сам METAR-токен без L/R/C
+      if (!hasSide) {
         data.rvrReports[runwayNormalized] = rvrData;
       }
     }
@@ -2916,7 +2917,7 @@ function formatRVRValue(rvr) {
     valueText = normalize(rvr.value);
   }
 
-  const trendMap = { U: '↑', D: '↓', N: '→' };
+  const trendMap = { U: '↑', D: '↓' };
   if (rvr.trend && trendMap[rvr.trend]) {
     valueText += ` ${trendMap[rvr.trend]}`;
   }
@@ -2959,8 +2960,9 @@ function updateRVRDisplay(compassIndex) {
     : runwayIdent.trim();
   const runwayKeyNormalized = runwayKey.replace(/[LRC]/g, '');
 
+  const hasRunwaySide = /[LRC]$/.test(runwayKey);
   const rvr = currentMetarData.rvrReports[runwayKey]
-    || currentMetarData.rvrReports[runwayKeyNormalized]
+    || (!hasRunwaySide ? currentMetarData.rvrReports[runwayKeyNormalized] : null)
     || null;
   if (!rvr) {
     rvrField.textContent = '-';
