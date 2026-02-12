@@ -778,12 +778,12 @@ function parseVisibilityToken(parts, index) {
   if (!token) return null;
 
   if (token === 'CAVOK') {
-    return { value: 9999, consumed: 0 };
+    return { value: 9999, consumed: 0, displayValue: '9999', unit: 'm' };
   }
 
   const metersMatch = token.match(/^(\d{4})(?:NDV)?$/);
   if (metersMatch) {
-    return { value: parseInt(metersMatch[1], 10), consumed: 0 };
+    return { value: parseInt(metersMatch[1], 10), consumed: 0, displayValue: metersMatch[1], unit: 'm' };
   }
 
   const simpleSmMatch = token.match(/^(M|P)?(\d+)(?:\/(\d+))?SM$/);
@@ -794,9 +794,10 @@ function parseVisibilityToken(parts, index) {
     const valueSm = divisor ? whole / divisor : whole;
     const meters = convertSmToMeters(valueSm);
     if (meters === null) return null;
-    if (qualifier === 'M') return { value: Math.max(0, meters - 1), consumed: 0 };
-    if (qualifier === 'P') return { value: meters + 1, consumed: 0 };
-    return { value: meters, consumed: 0 };
+    const smText = divisor ? `${whole}/${divisor}` : `${whole}`;
+    if (qualifier === 'M') return { value: Math.max(0, meters - 1), consumed: 0, displayValue: `<${smText}`, unit: 'sm' };
+    if (qualifier === 'P') return { value: meters + 1, consumed: 0, displayValue: `>${smText}`, unit: 'sm' };
+    return { value: meters, consumed: 0, displayValue: smText, unit: 'sm' };
   }
 
   const mixedSmWhole = token.match(/^(M|P)?(\d+)$/);
@@ -811,9 +812,10 @@ function parseVisibilityToken(parts, index) {
 
     const meters = convertSmToMeters(whole + numerator / denominator);
     if (meters === null) return null;
-    if (qualifier === 'M') return { value: Math.max(0, meters - 1), consumed: 1 };
-    if (qualifier === 'P') return { value: meters + 1, consumed: 1 };
-    return { value: meters, consumed: 1 };
+    const smText = `${whole} ${numerator}/${denominator}`;
+    if (qualifier === 'M') return { value: Math.max(0, meters - 1), consumed: 1, displayValue: `<${smText}`, unit: 'sm' };
+    if (qualifier === 'P') return { value: meters + 1, consumed: 1, displayValue: `>${smText}`, unit: 'sm' };
+    return { value: meters, consumed: 1, displayValue: smText, unit: 'sm' };
   }
 
   const fractionSmMatch = token.match(/^(M|P)?(\d+)\/(\d+)SM$/);
@@ -824,12 +826,28 @@ function parseVisibilityToken(parts, index) {
     if (denominator === 0) return null;
     const meters = convertSmToMeters(numerator / denominator);
     if (meters === null) return null;
-    if (qualifier === 'M') return { value: Math.max(0, meters - 1), consumed: 0 };
-    if (qualifier === 'P') return { value: meters + 1, consumed: 0 };
-    return { value: meters, consumed: 0 };
+    const smText = `${numerator}/${denominator}`;
+    if (qualifier === 'M') return { value: Math.max(0, meters - 1), consumed: 0, displayValue: `<${smText}`, unit: 'sm' };
+    if (qualifier === 'P') return { value: meters + 1, consumed: 0, displayValue: `>${smText}`, unit: 'sm' };
+    return { value: meters, consumed: 0, displayValue: smText, unit: 'sm' };
   }
 
   return null;
+}
+
+
+function formatVisibilityForDisplay(data, language = 'en') {
+  const rawValue = data?.visibility;
+  if (rawValue === null || rawValue === undefined || rawValue === '') {
+    return { value: '-', unit: language === 'ru' ? 'м' : 'm' };
+  }
+
+  const unit = data?.visibilityUnit || 'm';
+  if (unit === 'sm') {
+    return { value: String(rawValue), unit: language === 'ru' ? 'мили' : 'sm' };
+  }
+
+  return { value: String(rawValue), unit: language === 'ru' ? 'м' : 'm' };
 }
 
 function updateConnectionStatus(status, text) {
@@ -1105,6 +1123,7 @@ function parseMetar(metarString) {
     },
     windUnit: 'kt',
     visibility: 0,
+    visibilityUnit: 'm',
     weather: [],
     clouds: [],
     temperature: null,
@@ -1180,7 +1199,8 @@ function parseMetar(metarString) {
 
     const parsedVisibility = parseVisibilityToken(parts, i);
     if (!inRemarks && !inForecastSection && parsedVisibility) {
-      data.visibility = parsedVisibility.value;
+      data.visibility = parsedVisibility.displayValue ?? parsedVisibility.value;
+      data.visibilityUnit = parsedVisibility.unit || 'm';
       i += parsedVisibility.consumed;
       continue;
     }
@@ -1644,6 +1664,7 @@ function generateDemoData(icao) {
     wind: { direction: 190, speed: 5, gust: 0, variable: false, variableFrom: null, variableTo: null, calm: false },
     windUnit: 'kt',
     visibility: 9999,
+    visibilityUnit: 'm',
     weather: [],
     clouds: [
       { coverage: 'FEW', height: 2000 },
@@ -3290,12 +3311,15 @@ function updateWeatherDisplay(data) {
     if (dewField) dewField.textContent = data.dewpoint !== null ? data.dewpoint : '-';
   }
 
-  const visEl = document.querySelector('#morLabel').parentElement.querySelector('.data-value');
-  if (visEl) {
-    visEl.textContent = data.visibility || '-';
-  }
-
   const currentLanguage = document.getElementById('language').value === 'ru' ? 'ru' : 'en';
+
+  const visRow = document.querySelector('#morLabel').parentElement;
+  const visEl = visRow.querySelector('.data-value');
+  const visUnits = visRow.querySelector('.units');
+  const visDisplay = formatVisibilityForDisplay(data, currentLanguage);
+  if (visEl) visEl.textContent = visDisplay.value;
+  if (visUnits) visUnits.textContent = visDisplay.unit;
+
   const decodedClouds = decodeCloudiness(data.clouds, currentLanguage);
 
   const skyEl = document.querySelector('#skyConditionLabel').parentElement.querySelector('.data-value');
@@ -3831,8 +3855,12 @@ function applyLanguage(lang) {
     document.getElementById('runwayAlertLabel2').textContent = 'Предупр.';
     document.getElementById('frictionLabel2').textContent = 'КСц';
 
-    const morUnits = document.querySelector('#morLabel').parentElement.querySelector('.units');
-    if (morUnits) morUnits.textContent = 'м';
+    const morRow = document.querySelector('#morLabel').parentElement;
+    const morValue = morRow.querySelector('.data-value');
+    const morUnits = morRow.querySelector('.units');
+    const visDisplay = formatVisibilityForDisplay(currentMetarData, 'ru');
+    if (morValue) morValue.textContent = visDisplay.value;
+    if (morUnits) morUnits.textContent = visDisplay.unit;
     updateSpecialConditionsLanguage('ru');
 
   } else {
@@ -3854,8 +3882,12 @@ function applyLanguage(lang) {
     document.getElementById('runwayAlertLabel2').textContent = 'Alert';
     document.getElementById('frictionLabel2').textContent = 'Breaking action';
 
-    const morUnits = document.querySelector('#morLabel').parentElement.querySelector('.units');
-    if (morUnits) morUnits.textContent = 'm';
+    const morRow = document.querySelector('#morLabel').parentElement;
+    const morValue = morRow.querySelector('.data-value');
+    const morUnits = morRow.querySelector('.units');
+    const visDisplay = formatVisibilityForDisplay(currentMetarData, 'en');
+    if (morValue) morValue.textContent = visDisplay.value;
+    if (morUnits) morUnits.textContent = visDisplay.unit;
     updateSpecialConditionsLanguage('en');
   }
 
