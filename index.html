@@ -116,10 +116,11 @@ select:focus,input:focus{
 .compass-stage{position:relative;width:100%;aspect-ratio:1;flex:0 0 auto}
 .compass-row{position:absolute;left:15px;right:15px;display:flex;align-items:center;justify-content:space-between;z-index:5}
 .compass-row-top{top:15px}
-.compass-row-bottom{bottom:15px;justify-content:flex-end}
+.compass-row-bottom{bottom:15px;justify-content:space-between}
 .compass-row-top .lateral-component{justify-self:start}
 .compass-row-top .headwind-component{justify-self:end}
 .compass-row-bottom .friction-coefficient{justify-self:end}
+.compass-row-bottom .runway-alert{justify-self:start}
 
 /* ========== СТАТУС ПОДКЛЮЧЕНИЯ ========== */
 .connection-status{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);padding:4px 8px;border-radius:999px;background:rgba(148,163,184,.12)}
@@ -201,7 +202,7 @@ select:focus,input:focus{
 .block-1 .data-field{width:clamp(77px,7.7vw,105px);text-align:center;padding:min(4px,.4vw);background:rgba(148,163,184,.12);border-radius:6px}
 .data-field{text-align:center;padding:min(4px,.5vw);background:rgba(148,163,184,.12);border-radius:6px}
 .dark .data-field{background:rgba(148,163,184,.12)}
-.data-label{font-size:clamp(10px,1vw,12px);color:var(--muted);margin-bottom:2px}
+.data-label{font-size:clamp(14px,1.4vw,16.8px);color:var(--muted);margin-bottom:2px}
 .dark .data-label{color:var(--muted)}
 .data-value{font-size:clamp(16px,1.6vw,22px);font-weight:bold;line-height:.9}
 #currentTime,#sunrise,#sunset{font-weight:normal!important}
@@ -252,15 +253,19 @@ select:focus,input:focus{
 .dark .runway-display.right-landing::after{border-right-color:#ccc}
 
 /* ========== КОМПОНЕНТЫ ВЕТРА ========== */
-.lateral-component,.headwind-component{position:relative;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center}
+.lateral-component,.headwind-component{position:relative;font-size:clamp(14px,1.4vw,16.8px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center}
 .lateral-component .data-label,.headwind-component .data-label{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:2px;background:transparent;font-size:clamp(6px,0.65vw,8px)}
-.friction-coefficient{position:relative;font-size:clamp(10px,1vw,12px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center}
-.friction-coefficient .data-label{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:2px;background:transparent;font-size:clamp(6px,0.65vw,8px)}
-.dark .lateral-component,.dark .headwind-component,.dark .friction-coefficient{background:rgba(148,163,184,.15);color:var(--muted)}
+.friction-coefficient,.runway-alert{position:relative;font-size:clamp(14px,1.4vw,16.8px);background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px;z-index:5;width:clamp(48px,5.2vw,70px);text-align:center}
+.friction-coefficient .data-label,.runway-alert .data-label{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:2px;background:transparent;font-size:clamp(6px,0.65vw,8px)}
+.lateral-component .data-value,.headwind-component .data-value,.friction-coefficient .data-value,.runway-alert .data-value{font-size:clamp(14px,1.4vw,16.8px);line-height:1.1}
+.runway-alert .data-value{color:#dc2626;font-weight:700}
+.dark .lateral-component,.dark .headwind-component,.dark .friction-coefficient,.dark .runway-alert{background:rgba(148,163,184,.15);color:var(--muted)}
+.dark .runway-alert .data-value{color:#f87171}
 
 .lateral-component.compass-info-item,
 .headwind-component.compass-info-item,
-.friction-coefficient.compass-info-item{
+.friction-coefficient.compass-info-item,
+.runway-alert.compass-info-item{
   display:flex;
   align-items:center;
   justify-content:center;
@@ -268,6 +273,9 @@ select:focus,input:focus{
   width:clamp(48px,5.2vw,70px);
   padding:2px 6px;
 }
+
+.runway-alert,
+.runway-alert.compass-info-item{width:clamp(96px,10.4vw,140px)}
 
 /* ========== COMPASS-INFO ========== */
 .compass-info{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,auto);column-gap:min(6px,0.6vw);row-gap:0;margin:0;font-size:clamp(8px,.8vw,11px);width:100%;max-width:100%;padding:0;position:static}
@@ -433,6 +441,10 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="compass-row compass-row-bottom">
+<div class="runway-alert compass-info-item">
+<div class="data-value">-</div>
+<div class="data-label" id="runwayAlertLabel1">Alert</div>
+</div>
 <div class="friction-coefficient compass-info-item">
 <div class="data-value">-</div>
 <div class="data-label" id="frictionLabel1">Breaking action</div>
@@ -467,20 +479,20 @@ select:focus,input:focus{
 </div>
 </div>
 </div>
-<div class="weather-row">
+<div class="weather-row qnh-row qnh-row-hpa">
 <div class="section-label">QNH</div>
 <div class="data-field"><div class="data-value">-</div></div>
 <div class="units">hPa</div>
 </div>
-<div class="weather-row pressure-row">
-<div class="section-label"></div>
-<div class="data-field"><div class="data-value pressure-secondary">-</div></div>
-<div class="units">mmHg</div>
-</div>
-<div class="weather-row pressure-row">
+<div class="weather-row pressure-row qnh-row qnh-row-inhg">
 <div class="section-label"></div>
 <div class="data-field"><div class="data-value pressure-secondary">-</div></div>
 <div class="units">inHg</div>
+</div>
+<div class="weather-row pressure-row qnh-row qnh-row-mmhg">
+<div class="section-label"></div>
+<div class="data-field"><div class="data-value pressure-secondary">-</div></div>
+<div class="units">mmHg</div>
 </div>
 <div class="weather-row">
 <div class="section-label">T</div>
@@ -502,7 +514,7 @@ select:focus,input:focus{
 <div class="units">м</div>
 </div>
 <div class="weather-row">
-<div class="section-label" id="qbbLabel">QBB</div>
+<div class="section-label" id="qbbLabel">ВНГО</div>
 <div class="data-field"><div class="data-value">-</div></div>
 <div class="units">м</div>
 </div>
@@ -544,6 +556,10 @@ select:focus,input:focus{
 </div>
 </div>
 <div class="compass-row compass-row-bottom">
+<div class="runway-alert compass-info-item">
+<div class="data-value">-</div>
+<div class="data-label" id="runwayAlertLabel2">Alert</div>
+</div>
 <div class="friction-coefficient compass-info-item">
 <div class="data-value">-</div>
 <div class="data-label" id="frictionLabel2">Breaking action</div>
@@ -1014,7 +1030,15 @@ function parseMetar(metarString) {
     raw: metarString,
     icao: parts[0],
     time: '',
-    wind: { direction: 0, speed: 0, gust: 0, variable: false, calm: false },
+    wind: {
+      direction: 0,
+      speed: 0,
+      gust: 0,
+      variable: false,
+      variableFrom: null,
+      variableTo: null,
+      calm: false
+    },
     windUnit: 'kt',
     visibility: 0,
     weather: [],
@@ -1022,12 +1046,34 @@ function parseMetar(metarString) {
     temperature: null,
     dewpoint: null,
     pressure: 0,
+    pressureSource: 'Q',
     runwayStates: [],
-    runwayWinds: {}
+    runwayWinds: {},
+    runwayAlerts: {},
+    rvrReports: {},
+    forecast: '-'
   };
+
+  let inRemarks = false;
+  let inForecastSection = false;
 
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i];
+
+    if (part === 'RMK') {
+      inRemarks = true;
+      inForecastSection = false;
+      continue;
+    }
+
+    if (!inRemarks && part.match(/^(NOSIG|TEMPO|BECMG|PROB\d{2})$/)) {
+      inForecastSection = true;
+      continue;
+    }
+
+    if (!inRemarks && inForecastSection) {
+      continue;
+    }
 
     if (part.match(/^\d{6}Z$/)) {
       data.time = part;
@@ -1061,11 +1107,11 @@ function parseMetar(metarString) {
       data.wind.speed = 0;
     }
 
-    if (part.match(/^\d{3}V\d{3}$/)) {
+    if (!inRemarks && part.match(/^\d{3}V\d{3}$/)) {
       data.wind.variable = true;
       const winds = part.split('V');
-      data.variableFrom = parseInt(winds[0]);
-      data.variableTo = parseInt(winds[1]);
+      data.wind.variableFrom = parseInt(winds[0], 10);
+      data.wind.variableTo = parseInt(winds[1], 10);
     }
 
     if (part.match(/^\d{4}$/) && parseInt(part) > 100) {
@@ -1080,6 +1126,64 @@ function parseMetar(metarString) {
 
     if (part.match(/^Q\d{4}$/)) {
       data.pressure = parseInt(part.substring(1));
+      data.pressureSource = 'Q';
+    }
+
+    if (part.match(/^A\d{4}$/)) {
+      const inhg = parseInt(part.substring(1), 10) / 100;
+      data.pressure = Math.round(inhg * 33.8639);
+      data.pressureSource = 'A';
+    }
+
+    // ПАРСИНГ RVR - формат R10/1200, R10/P1500, R10/0600V1000U, R10/0600FT
+    const rvrMatch = part.match(/^R(\d{2}[LRC]?)\/([MP]?\d{4}(?:V[MP]?\d{4})?)(FT)?([UDN])?$/);
+    if (rvrMatch) {
+      const runwayExact = rvrMatch[1];
+      const runwayNormalized = runwayExact.replace(/[LRC]/g, '');
+      const hasSide = /[LRC]$/.test(runwayExact);
+      const rvrData = {
+        value: rvrMatch[2],
+        unit: rvrMatch[3] ? 'ft' : 'm',
+        trend: rvrMatch[4] || null
+      };
+
+      // Для R05R/R05L храним только точный ключ, чтобы не протекало на противоположную ВПП
+      data.rvrReports[runwayExact] = rvrData;
+
+      // fallback без индикатора только если сам METAR-токен без L/R/C
+      if (!hasSide) {
+        data.rvrReports[runwayNormalized] = rvrData;
+      }
+    }
+
+    if (part === 'WS') {
+      // WS ALL RWY
+      if (i + 2 < parts.length && parts[i + 1] === 'ALL' && parts[i + 2] === 'RWY') {
+        if (!data.runwayAlerts.ALL) {
+          data.runwayAlerts.ALL = [];
+        }
+        data.runwayAlerts.ALL.push('WS');
+        i += 2;
+      }
+
+      // WS R22
+      const runwayMatch = i + 1 < parts.length ? parts[i + 1].match(/^R(\d{2}[LRC]?)$/) : null;
+      if (runwayMatch) {
+        const runway = runwayMatch[1];
+        const normalizedRunway = runway.replace(/[LRC]/g, '');
+        if (!data.runwayAlerts[normalizedRunway]) {
+          data.runwayAlerts[normalizedRunway] = [];
+        }
+        data.runwayAlerts[normalizedRunway].push('WS');
+        i++;
+      }
+    }
+
+    if (part.match(/^WSHFT(?:\d{2})?$/)) {
+      if (!data.runwayAlerts.ALL) {
+        data.runwayAlerts.ALL = [];
+      }
+      data.runwayAlerts.ALL.push('WSHFT');
     }
 
     if (part.match(/^(SKC|CLR|FEW|SCT|BKN|OVC|NSC|NCD)\d{0,3}(CB|TCU)?$/)) {
@@ -1153,9 +1257,13 @@ function parseMetar(metarString) {
     }
   }
 
+  data.forecast = extractForecastSection(metarString);
+
   const remarksSection = extractRemarksSection(metarString);
+  const currentLang = document.getElementById('language')?.value || 'en';
+  const directionalVisibility = parseDirectionalVisibilityFromMetar(metarString, currentLang);
+
   if (remarksSection) {
-    const currentLang = document.getElementById('language')?.value || 'en';
     data.specialConditions = parseSpecialConditionsFromRemarks(remarksSection, currentLang);
     data.runwayWinds = parseRunwayWindsFromRemarks(remarksSection);
   } else {
@@ -1163,9 +1271,41 @@ function parseMetar(metarString) {
     data.runwayWinds = {};
   }
 
+  if (directionalVisibility.length > 0) {
+    data.specialConditions.other.push(...directionalVisibility);
+  }
+
   console.log(`📊 Parsed METAR runwayStates:`, data.runwayStates);
 
   return data;
+}
+
+
+function extractForecastSection(metarString) {
+  if (!metarString) return '-';
+
+  const parts = metarString.split(/\s+/);
+  let startIndex = -1;
+
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i].match(/^(NOSIG|TEMPO|BECMG|PROB\d{2})$/)) {
+      startIndex = i;
+      break;
+    }
+  }
+
+  if (startIndex === -1) return '-';
+
+  let endIndex = parts.length;
+  for (let i = startIndex; i < parts.length; i++) {
+    if (parts[i] === 'RMK') {
+      endIndex = i;
+      break;
+    }
+  }
+
+  const forecastTokens = parts.slice(startIndex, endIndex).join(' ').trim();
+  return forecastTokens || '-';
 }
 
 function extractRemarksSection(metarString) {
@@ -1180,6 +1320,62 @@ function extractRemarksSection(metarString) {
   remarksSection = remarksSection.replace(/\s*=\s*$/, '');
 
   return remarksSection.trim();
+}
+
+function parseDirectionalVisibilityFromMetar(metarString, language = 'ru') {
+  if (!metarString) return [];
+
+  const parts = metarString.split(/\s+/);
+  const result = [];
+  let inRemarks = false;
+  let inForecastSection = false;
+
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+
+    if (part === 'RMK') {
+      inRemarks = true;
+      inForecastSection = false;
+      continue;
+    }
+
+    if (!inRemarks && part.match(/^(NOSIG|TEMPO|BECMG|PROB\d{2})$/)) {
+      inForecastSection = true;
+      continue;
+    }
+
+    if (!inRemarks && inForecastSection) {
+      continue;
+    }
+    const directionalVisMatch = part.match(/^(\d{4})(N|S|E|W|NE|NW|SE|SW)$/);
+    if (!directionalVisMatch) continue;
+
+    const value = parseInt(directionalVisMatch[1], 10).toString();
+    const direction = directionalVisMatch[2];
+    const code = directionalVisMatch[0];
+
+    const directionMap = {
+      en: {
+        N: 'North', S: 'South', E: 'East', W: 'West',
+        NE: 'North-East', NW: 'North-West', SE: 'South-East', SW: 'South-West'
+      },
+      ru: {
+        N: 'Север', S: 'Юг', E: 'Восток', W: 'Запад',
+        NE: 'Северо-восток', NW: 'Северо-запад', SE: 'Юго-восток', SW: 'Юго-запад'
+      }
+    };
+
+    const directionText = directionMap[language]?.[direction] || direction;
+    const unitText = language === 'ru' ? 'м' : 'm';
+    const visibilityLabel = language === 'ru' ? 'Видимость:' : 'Visibility:';
+
+    result.push({
+      code,
+      decoded: `${visibilityLabel} ${value} ${unitText} ${directionText}`
+    });
+  }
+
+  return result;
 }
 
 function parseSpecialConditionsFromRemarks(remarksString, language = 'ru') {
@@ -1257,25 +1453,41 @@ function parseRunwayWindsFromRemarks(remarksString) {
   const runwayWinds = {};
   const parts = remarksString.split(/\s+/);
 
-  parts.forEach((part) => {
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
     const match = part.match(/^R(\d{2}[LRC]?)\/(\d{3})(\d{2})(G(\d{2}))?(KT|MPS)$/);
-    if (!match) return;
+    if (!match) continue;
 
     const runway = match[1];
     const direction = parseInt(match[2], 10);
     const speed = parseInt(match[3], 10);
     const gust = match[5] ? parseInt(match[5], 10) : 0;
     const unit = match[6] === 'MPS' ? 'м/с' : 'kt';
+    const variableToken = parts[i + 1];
+    let variableFrom = null;
+    let variableTo = null;
+    let variable = false;
 
-    runwayWinds[runway] = {
+    if (variableToken && variableToken.match(/^\d{3}V\d{3}$/)) {
+      const winds = variableToken.split('V');
+      variableFrom = parseInt(winds[0], 10);
+      variableTo = parseInt(winds[1], 10);
+      variable = true;
+    }
+
+    const normalizedRunway = runway.replace(/[LRC]/g, '');
+
+    runwayWinds[normalizedRunway] = {
       direction,
       speed,
       gust,
       unit,
       calm: speed === 0,
-      variable: false
+      variable,
+      variableFrom,
+      variableTo
     };
-  });
+  }
 
   return runwayWinds;
 }
@@ -1284,28 +1496,55 @@ function updateSpecialConditionsLanguage(lang) {
   if (!currentMetarData || !currentMetarData.raw) return;
 
   const remarksSection = extractRemarksSection(currentMetarData.raw);
+  const directionalVisibility = parseDirectionalVisibilityFromMetar(currentMetarData.raw, lang);
+
   if (remarksSection) {
     currentMetarData.specialConditions = parseSpecialConditionsFromRemarks(remarksSection, lang);
   } else {
     currentMetarData.specialConditions = { qfe: null, qbb: null, other: [] };
   }
 
+  if (directionalVisibility.length > 0) {
+    currentMetarData.specialConditions.other.push(...directionalVisibility);
+  }
+
   const specialEl = document.getElementById('specialConditions');
   if (!specialEl) return;
 
-  if (currentMetarData.specialConditions.other.length > 0) {
-    const specialTexts = currentMetarData.specialConditions.other.map(item => item.decoded);
-    specialEl.textContent = specialTexts.join(', ');
-  } else {
-    specialEl.textContent = '-';
+  specialEl.textContent = buildSpecialConditionsText(currentMetarData.specialConditions, lang);
+}
+
+function buildSpecialConditionsText(specialConditions, language = 'ru') {
+  if (!specialConditions) return '-';
+
+  const parts = [];
+
+  if (specialConditions.other && specialConditions.other.length > 0) {
+    parts.push(...specialConditions.other.map(item => item.decoded));
   }
+
+  if (specialConditions.qbb !== null && specialConditions.qbb !== undefined) {
+    const unit = language === 'ru' ? 'м' : 'm';
+    parts.push(`QBB ${specialConditions.qbb} ${unit}`);
+  }
+
+  return parts.length > 0 ? parts.join(', ') : '-';
 }
 
 async function fetchMetarData(icao) {
   updateConnectionStatus('loading', 'Loading METAR...');
 
+  let timeoutId = null;
+
   try {
-    const response = await fetch(`https://metar.vatsim.net/${icao.toUpperCase()}`);
+    const controller = new AbortController();
+    const timeoutMs = 10000;
+    timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    const response = await fetch(`https://metar.vatsim.net/${icao.toUpperCase()}`, {
+      signal: controller.signal
+    });
+
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const metarText = await response.text();
@@ -1325,6 +1564,8 @@ async function fetchMetarData(icao) {
     console.error('METAR fetch error:', error);
     updateConnectionStatus('error', 'METAR error');
     return generateDemoData(icao);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
   }
 }
 
@@ -1333,7 +1574,7 @@ function generateDemoData(icao) {
     raw: `${icao} NO METAR`,
     icao: icao,
     time: '121853Z',
-    wind: { direction: 190, speed: 5, gust: 0, variable: false, calm: false },
+    wind: { direction: 190, speed: 5, gust: 0, variable: false, variableFrom: null, variableTo: null, calm: false },
     windUnit: 'kt',
     visibility: 9999,
     weather: [],
@@ -1343,7 +1584,11 @@ function generateDemoData(icao) {
     ],
     temperature: 12,
     dewpoint: 8,
-    pressure: 1013
+    pressure: 1013,
+    pressureSource: 'Q',
+    runwayAlerts: {},
+    rvrReports: {},
+    forecast: '-'
   };
 }
 
@@ -2295,7 +2540,7 @@ function addWindToCompass(compassId) {
     ? currentMetarData.runwayWinds[runwayKey]
     : null;
   const windSource = runwayWind || currentMetarData.wind;
-  const useVariableWind = !runwayWind && currentMetarData.wind.variable;
+  const useVariableWind = !!windSource.variable;
   let windDir = windSource.calm ? 0 : windSource.direction;
   let windSpeed = windSource.calm ? 0 : windSource.speed;
   let windGust = windSource.gust || 0;
@@ -2379,7 +2624,7 @@ function addWindToCompass(compassId) {
     const ws = document.createElement('div');
     ws.className = 'wind-sector variable';
 
-    if (currentMetarData.variableFrom !== undefined && currentMetarData.variableTo !== undefined) {
+    if (windSource.variableFrom !== null && windSource.variableTo !== null) {
       const r = c.getBoundingClientRect();
       const s = Math.min(r.width, r.height);
       const rad = s / 2;
@@ -2387,8 +2632,8 @@ function addWindToCompass(compassId) {
       const compassRadius = cssRadius > 0 ? cssRadius : rad;
       const cx = s / 2, cy = s / 2;
 
-      const fromAngle = currentMetarData.variableFrom;
-      const toAngle = currentMetarData.variableTo;
+      const fromAngle = windSource.variableFrom;
+      const toAngle = windSource.variableTo;
       let arcSpan = toAngle - fromAngle;
       if (arcSpan < 0) arcSpan += 360;
 
@@ -2553,7 +2798,7 @@ function initializeDefaultCompassInfo(compassIndex) {
   qfeRow2.innerHTML = `
     <div class="section-label" style="visibility:hidden">QFE</div>
     <div class="data-field">-</div>
-    <div class="units">mmHg</div>
+    <div class="units">inHg</div>
   `;
   compassInfo.appendChild(qfeRow2);
 
@@ -2562,7 +2807,7 @@ function initializeDefaultCompassInfo(compassIndex) {
   qfeRow3.innerHTML = `
     <div class="section-label" style="visibility:hidden">QFE</div>
     <div class="data-field">-</div>
-    <div class="units">inHg</div>
+    <div class="units">mmHg</div>
   `;
   compassInfo.appendChild(qfeRow3);
 
@@ -2590,6 +2835,12 @@ function initializeDefaultCompassInfo(compassIndex) {
     </div>
   `;
   compassInfo.appendChild(runwayStateRow);
+
+  const compassBlock = compassInfo.closest('.block');
+  const alertElement = compassBlock ? compassBlock.querySelector('.runway-alert .data-value') : null;
+  if (alertElement) {
+    alertElement.textContent = '-';
+  }
 }
 
 // ========== ОБНОВЛЕНИЕ ДИСПЛЕЕВ ==========
@@ -2603,29 +2854,38 @@ function updateQFEDisplay(qfeId, qfeValue, elevation, compassIndex) {
   }
 
   const qfePressure = convertPressure(qfeValue);
+  const isAltimeterFormat = currentMetarData && currentMetarData.pressureSource === 'A';
+
+  const row1 = isAltimeterFormat
+    ? { value: qfePressure.inhg, unit: 'inHg' }
+    : { value: qfePressure.hpa, unit: 'hPa' };
+  const row2 = isAltimeterFormat
+    ? { value: qfePressure.hpa, unit: 'hPa' }
+    : { value: qfePressure.inhg, unit: 'inHg' };
+  const row3 = { value: qfePressure.mmhg, unit: 'mmHg' };
 
   const qfeRow1 = compassInfo.querySelector('.qfe-row-1') || document.createElement('div');
   qfeRow1.className = 'qfe-row-1 compass-info-item';
   qfeRow1.innerHTML = `
     <div class="section-label">QFE</div>
-    <div class="data-field">${qfePressure.hpa}</div>
-    <div class="units">hPa</div>
+    <div class="data-field">${row1.value}</div>
+    <div class="units">${row1.unit}</div>
   `;
 
   const qfeRow2 = compassInfo.querySelector('.qfe-row-2') || document.createElement('div');
   qfeRow2.className = 'qfe-row-2 compass-info-item';
   qfeRow2.innerHTML = `
     <div class="section-label" style="visibility:hidden">QFE</div>
-    <div class="data-field">${qfePressure.mmhg}</div>
-    <div class="units">mmHg</div>
+    <div class="data-field">${row2.value}</div>
+    <div class="units">${row2.unit}</div>
   `;
 
   const qfeRow3 = compassInfo.querySelector('.qfe-row-3') || document.createElement('div');
   qfeRow3.className = 'qfe-row-3 compass-info-item';
   qfeRow3.innerHTML = `
     <div class="section-label" style="visibility:hidden">QFE</div>
-    <div class="data-field">${qfePressure.inhg}</div>
-    <div class="units">inHg</div>
+    <div class="data-field">${row3.value}</div>
+    <div class="units">${row3.unit}</div>
   `;
 
   if (!compassInfo.contains(qfeRow1)) compassInfo.appendChild(qfeRow1);
@@ -2731,6 +2991,130 @@ function updateRunwayStateDisplay(compassIndex) {
   }
 }
 
+function updateRunwayAlertDisplay(compassIndex) {
+  const compassInfo = document.querySelectorAll('.compass-info')[compassIndex];
+  if (!compassInfo) return;
+
+  const compassBlock = compassInfo.closest('.block');
+  const alertElement = compassBlock ? compassBlock.querySelector('.runway-alert .data-value') : null;
+  if (!alertElement) return;
+
+  if (!currentMetarData || !currentMetarData.runwayAlerts) {
+    alertElement.textContent = '-';
+    return;
+  }
+
+  let runwayIdent = '';
+  if (compassIndex === 0) {
+    runwayIdent = document.getElementById('runwaySelect')?.value;
+  } else {
+    runwayIdent = document.getElementById('runwayDisplay2')?.textContent;
+  }
+
+  if (!runwayIdent || runwayIdent === '--') {
+    alertElement.textContent = '-';
+    return;
+  }
+
+  const runwayKey = window.runwayStateDecoder?.extractRunwayNumber
+    ? window.runwayStateDecoder.extractRunwayNumber(runwayIdent)
+    : runwayIdent.replace(/[LRC]/g, '');
+
+  const runwayAlerts = currentMetarData.runwayAlerts[runwayKey] || [];
+  const allRunwayAlerts = currentMetarData.runwayAlerts.ALL || [];
+  const combinedAlerts = [...new Set([...allRunwayAlerts, ...runwayAlerts])];
+
+  const currentLang = document.getElementById('language')?.value || 'en';
+  const decodeAlert = (alertCode) => {
+    if (alertCode === 'WS') {
+      return currentLang === 'ru' ? 'СДВИГ ВЕТРА' : 'WIND SHEAR';
+    }
+    if (alertCode === 'WSHFT') {
+      return currentLang === 'ru' ? 'СМЕНА ВЕТРА' : 'WIND SHIFT';
+    }
+    return alertCode;
+  };
+
+  alertElement.textContent = combinedAlerts.length > 0
+    ? combinedAlerts.map(decodeAlert).join(', ')
+    : '-';
+}
+
+function formatRVRValue(rvr) {
+  if (!rvr || !rvr.value) return '-';
+
+  const normalize = (segment) => {
+    if (segment.startsWith('M')) return `<${segment.slice(1)}`;
+    if (segment.startsWith('P')) return `>${segment.slice(1)}`;
+    return segment;
+  };
+
+  let valueText = rvr.value;
+  if (rvr.value.includes('V')) {
+    const [from, to] = rvr.value.split('V');
+    valueText = `${normalize(from)}-${normalize(to)}`;
+  } else {
+    valueText = normalize(rvr.value);
+  }
+
+  const trendMap = { U: '↑', D: '↓' };
+  if (rvr.trend && trendMap[rvr.trend]) {
+    valueText += ` ${trendMap[rvr.trend]}`;
+  }
+
+  return valueText;
+}
+
+function updateRVRDisplay(compassIndex) {
+  const compassInfo = document.querySelectorAll('.compass-info')[compassIndex];
+  if (!compassInfo) return;
+
+  const rvrRow = compassInfo.querySelector('.rvr-row');
+  if (!rvrRow) return;
+
+  const rvrField = rvrRow.querySelector('.data-field');
+  const rvrUnits = rvrRow.querySelector('.units');
+  if (!rvrField || !rvrUnits) return;
+
+  if (!currentMetarData || !currentMetarData.rvrReports) {
+    rvrField.textContent = '-';
+    rvrUnits.textContent = 'м';
+    return;
+  }
+
+  let runwayIdent = '';
+  if (compassIndex === 0) {
+    runwayIdent = document.getElementById('runwaySelect')?.value;
+  } else {
+    runwayIdent = document.getElementById('runwayDisplay2')?.textContent;
+  }
+
+  if (!runwayIdent || runwayIdent === '--') {
+    rvrField.textContent = '-';
+    rvrUnits.textContent = 'м';
+    return;
+  }
+
+  const runwayKey = window.runwayStateDecoder?.extractRunwayNumber
+    ? window.runwayStateDecoder.extractRunwayNumber(runwayIdent)
+    : runwayIdent.trim();
+  const runwayKeyNormalized = runwayKey.replace(/[LRC]/g, '');
+
+  const hasRunwaySide = /[LRC]$/.test(runwayKey);
+  const rvr = currentMetarData.rvrReports[runwayKey]
+    || (!hasRunwaySide ? currentMetarData.rvrReports[runwayKeyNormalized] : null)
+    || null;
+  if (!rvr) {
+    rvrField.textContent = '-';
+    rvrUnits.textContent = 'м';
+    return;
+  }
+
+  const lang = document.getElementById('language')?.value || 'ru';
+  rvrField.textContent = formatRVRValue(rvr);
+  rvrUnits.textContent = rvr.unit === 'ft' ? (lang === 'ru' ? 'фт' : 'ft') : (lang === 'ru' ? 'м' : 'm');
+}
+
 async function updateQFEForSelectedRunways() {
   if (!currentMetarData || !currentRunwayData) return;
 
@@ -2787,38 +3171,54 @@ function updateWeatherDisplay(data) {
 
   document.getElementById('metarCode').textContent = data.raw;
 
+  const forecastValueEl = document.querySelector('.forecast-field .forecast-value');
+  if (forecastValueEl) {
+    forecastValueEl.textContent = data.forecast || '-';
+  }
+
   if (data.pressure && data.pressure > 0) {
     const pressure = convertPressure(data.pressure);
-    const allWeatherRows = document.querySelectorAll('.weather-row');
-    let hpaField = null, mmhgField = null, inhgField = null;
-    let tempField = null, dewField = null;
+    const isAltimeterFormat = data.pressureSource === 'A';
 
-    allWeatherRows.forEach((row) => {
+    const qnhHpaValue = document.querySelector('.qnh-row-hpa .data-value');
+    const qnhHpaUnits = document.querySelector('.qnh-row-hpa .units');
+    const qnhInhgValue = document.querySelector('.qnh-row-inhg .data-value');
+    const qnhInhgUnits = document.querySelector('.qnh-row-inhg .units');
+    const qnhMmhgValue = document.querySelector('.qnh-row-mmhg .data-value');
+    const qnhMmhgUnits = document.querySelector('.qnh-row-mmhg .units');
+
+    if (isAltimeterFormat) {
+      if (qnhHpaValue) qnhHpaValue.textContent = pressure.inhg;
+      if (qnhHpaUnits) qnhHpaUnits.textContent = 'inHg';
+      if (qnhInhgValue) qnhInhgValue.textContent = pressure.hpa;
+      if (qnhInhgUnits) qnhInhgUnits.textContent = 'hPa';
+    } else {
+      if (qnhHpaValue) qnhHpaValue.textContent = pressure.hpa;
+      if (qnhHpaUnits) qnhHpaUnits.textContent = 'hPa';
+      if (qnhInhgValue) qnhInhgValue.textContent = pressure.inhg;
+      if (qnhInhgUnits) qnhInhgUnits.textContent = 'inHg';
+    }
+
+    if (qnhMmhgValue) qnhMmhgValue.textContent = pressure.mmhg;
+    if (qnhMmhgUnits) qnhMmhgUnits.textContent = 'mmHg';
+
+    const tempRows = document.querySelectorAll('.weather-row');
+    let tempField = null;
+    let dewField = null;
+
+    tempRows.forEach((row) => {
       const label = row.querySelector('.section-label');
       const value = row.querySelector('.data-value');
       const units = row.querySelector('.units');
+      if (!label || !value || !units) return;
 
-      if (!value || !units) return;
+      const labelText = label.textContent.trim();
+      const unitText = units.textContent.trim();
 
-      const labelText = label ? label.textContent.trim() : '';
-      const unitsText = units.textContent.trim();
-
-      if (unitsText === 'hPa' && !hpaField) {
-        hpaField = value;
-      } else if (unitsText === 'mmHg' && !mmhgField) {
-        mmhgField = value;
-      } else if (unitsText === 'inHg' && !inhgField) {
-        inhgField = value;
-      } else if (unitsText === '°C' && labelText === 'T' && !tempField) {
-        tempField = value;
-      } else if (unitsText === '°C' && labelText === 'DP' && !dewField) {
-        dewField = value;
-      }
+      if (labelText === 'T' && unitText === '°C' && !tempField) tempField = value;
+      if (labelText === 'DP' && unitText === '°C' && !dewField) dewField = value;
     });
 
-    if (hpaField) hpaField.textContent = pressure.hpa;
-    if (mmhgField) mmhgField.textContent = pressure.mmhg;
-    if (inhgField) inhgField.textContent = pressure.inhg;
     if (tempField) tempField.textContent = data.temperature !== null ? data.temperature : '-';
     if (dewField) dewField.textContent = data.dewpoint !== null ? data.dewpoint : '-';
   }
@@ -2840,24 +3240,19 @@ function updateWeatherDisplay(data) {
   const cloudBaseUnitsEl = document.querySelector('#qbbLabel').parentElement.querySelector('.units');
 
   if (cloudBaseEl && cloudBaseUnitsEl) {
-    if (data.specialConditions && data.specialConditions.qbb !== null) {
-      cloudBaseEl.textContent = data.specialConditions.qbb.toString();
-      cloudBaseUnitsEl.textContent = currentLanguage === 'ru' ? 'м' : 'm';
-    } else {
-      let cloudBaseText = '-';
+    let cloudBaseText = '-';
+    cloudBaseUnitsEl.textContent = currentLanguage === 'ru' ? 'фт' : 'ft';
 
-      const lowestCloudLayer = decodedClouds.layers
-        .filter(layer => layer.height && layer.height > 0 &&
-                       ['BKN', 'OVC', 'SCT', 'FEW'].includes(layer.coverageCode))
-        .sort((a, b) => a.height - b.height)[0];
+    const lowestCloudLayer = decodedClouds.layers
+      .filter(layer => layer.height && layer.height > 0 &&
+                     ['BKN', 'OVC', 'SCT', 'FEW'].includes(layer.coverageCode))
+      .sort((a, b) => a.height - b.height)[0];
 
-      if (lowestCloudLayer) {
-        cloudBaseText = lowestCloudLayer.height.toString();
-        cloudBaseUnitsEl.textContent = currentLanguage === 'ru' ? 'фт' : 'ft';
-      }
-
-      cloudBaseEl.textContent = cloudBaseText;
+    if (lowestCloudLayer) {
+      cloudBaseText = lowestCloudLayer.height.toString();
     }
+
+    cloudBaseEl.textContent = cloudBaseText;
   }
 
   const weatherEl = document.getElementById('weatherPhenomena');
@@ -2876,12 +3271,7 @@ function updateWeatherDisplay(data) {
 
   const specialEl = document.getElementById('specialConditions');
   if (specialEl) {
-    if (data.specialConditions && data.specialConditions.other && data.specialConditions.other.length > 0) {
-      const specialTexts = data.specialConditions.other.map(item => item.decoded);
-      specialEl.textContent = specialTexts.join(', ');
-    } else {
-      specialEl.textContent = '-';
-    }
+    specialEl.textContent = buildSpecialConditionsText(data.specialConditions, currentLanguage);
   }
 
   console.log(`🔄 Updating runway state displays...`);
@@ -2892,6 +3282,10 @@ function updateWeatherDisplay(data) {
   } else {
     console.log(`⚠️ No runway states in data`);
   }
+  updateRunwayAlertDisplay(0);
+  updateRunwayAlertDisplay(1);
+  updateRVRDisplay(0);
+  updateRVRDisplay(1);
 
   updateSunriseSunset();
   if (currentRunwayData) {
@@ -2973,6 +3367,10 @@ async function updateRunwayOptions(icao) {
     updateQFEForSelectedRunways();
     updateRunwayStateDisplay(0);
     updateRunwayStateDisplay(1);
+    updateRunwayAlertDisplay(0);
+    updateRunwayAlertDisplay(1);
+    updateRVRDisplay(0);
+    updateRVRDisplay(1);
 
     updateConnectionStatus('connected', `${uniqueRunways.length} runways loaded`);
 
@@ -3005,6 +3403,10 @@ function updateOppositeRunway() {
   updateQFEForSelectedRunways();
   updateRunwayStateDisplay(0);
   updateRunwayStateDisplay(1);
+  updateRunwayAlertDisplay(0);
+  updateRunwayAlertDisplay(1);
+  updateRVRDisplay(0);
+  updateRVRDisplay(1);
 }
 
 function getOppositeRunway(selectedRunway) {
@@ -3355,9 +3757,11 @@ function applyLanguage(lang) {
     document.getElementById('specialLabel').textContent = 'Особые условия';
     document.getElementById('lateralLabel1').textContent = 'Боковая';
     document.getElementById('headwindLabel1').textContent = 'Встречная';
+    document.getElementById('runwayAlertLabel1').textContent = 'Предупр.';
     document.getElementById('frictionLabel1').textContent = 'КСц';
     document.getElementById('lateralLabel2').textContent = 'Боковая';
     document.getElementById('headwindLabel2').textContent = 'Встречная';
+    document.getElementById('runwayAlertLabel2').textContent = 'Предупр.';
     document.getElementById('frictionLabel2').textContent = 'КСц';
 
     const morUnits = document.querySelector('#morLabel').parentElement.querySelector('.units');
@@ -3370,15 +3774,17 @@ function applyLanguage(lang) {
     document.getElementById('sunsetLabel').textContent = 'Sunset';
     document.getElementById('weatherLabel').textContent = 'Weather';
     document.getElementById('morLabel').textContent = 'Visibility';
-    document.getElementById('qbbLabel').textContent = 'QBB';
+    document.getElementById('qbbLabel').textContent = 'Ceiling';
     document.getElementById('skyConditionLabel').textContent = 'Sky condition';
     document.getElementById('forecastLabel').textContent = 'Weather forecast';
     document.getElementById('specialLabel').textContent = 'Special conditions';
     document.getElementById('lateralLabel1').textContent = 'Side';
     document.getElementById('headwindLabel1').textContent = 'Head';
+    document.getElementById('runwayAlertLabel1').textContent = 'Alert';
     document.getElementById('frictionLabel1').textContent = 'Breaking action';
     document.getElementById('lateralLabel2').textContent = 'Side';
     document.getElementById('headwindLabel2').textContent = 'Head';
+    document.getElementById('runwayAlertLabel2').textContent = 'Alert';
     document.getElementById('frictionLabel2').textContent = 'Breaking action';
 
     const morUnits = document.querySelector('#morLabel').parentElement.querySelector('.units');
