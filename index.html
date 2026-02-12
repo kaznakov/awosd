@@ -1238,13 +1238,19 @@ function parseMetar(metarString) {
   }
 
   const remarksSection = extractRemarksSection(metarString);
+  const currentLang = document.getElementById('language')?.value || 'en';
+  const directionalVisibility = parseDirectionalVisibilityFromMetar(metarString, currentLang);
+
   if (remarksSection) {
-    const currentLang = document.getElementById('language')?.value || 'en';
     data.specialConditions = parseSpecialConditionsFromRemarks(remarksSection, currentLang);
     data.runwayWinds = parseRunwayWindsFromRemarks(remarksSection);
   } else {
     data.specialConditions = { qfe: null, qbb: null, other: [] };
     data.runwayWinds = {};
+  }
+
+  if (directionalVisibility.length > 0) {
+    data.specialConditions.other.push(...directionalVisibility);
   }
 
   console.log(`📊 Parsed METAR runwayStates:`, data.runwayStates);
@@ -1264,6 +1270,30 @@ function extractRemarksSection(metarString) {
   remarksSection = remarksSection.replace(/\s*=\s*$/, '');
 
   return remarksSection.trim();
+}
+
+function parseDirectionalVisibilityFromMetar(metarString, language = 'ru') {
+  if (!metarString) return [];
+
+  const parts = metarString.split(/\s+/);
+  const result = [];
+
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    const directionalVisMatch = part.match(/^(\d{4})(N|S|E|W|NE|NW|SE|SW)$/);
+    if (!directionalVisMatch) continue;
+
+    const value = directionalVisMatch[1];
+    const direction = directionalVisMatch[2];
+    const code = `${value}${direction}`;
+
+    result.push({
+      code,
+      decoded: code
+    });
+  }
+
+  return result;
 }
 
 function parseSpecialConditionsFromRemarks(remarksString, language = 'ru') {
@@ -1384,10 +1414,16 @@ function updateSpecialConditionsLanguage(lang) {
   if (!currentMetarData || !currentMetarData.raw) return;
 
   const remarksSection = extractRemarksSection(currentMetarData.raw);
+  const directionalVisibility = parseDirectionalVisibilityFromMetar(currentMetarData.raw, lang);
+
   if (remarksSection) {
     currentMetarData.specialConditions = parseSpecialConditionsFromRemarks(remarksSection, lang);
   } else {
     currentMetarData.specialConditions = { qfe: null, qbb: null, other: [] };
+  }
+
+  if (directionalVisibility.length > 0) {
+    currentMetarData.specialConditions.other.push(...directionalVisibility);
   }
 
   const specialEl = document.getElementById('specialConditions');
