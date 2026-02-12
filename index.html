@@ -1186,6 +1186,57 @@ function parseMetar(metarString) {
       data.runwayAlerts.ALL.push('WSHFT');
     }
 
+    // ПАРСИНГ RVR - формат R10/1200, R10/P1500, R10/0600V1000U, R10/0600FT
+    const rvrMatch = part.match(/^R(\d{2}[LRC]?)\/([MP]?\d{4}(?:V[MP]?\d{4})?)(FT)?([UDN])?$/);
+    if (rvrMatch) {
+      const runwayExact = rvrMatch[1];
+      const runwayNormalized = runwayExact.replace(/[LRC]/g, '');
+      const hasSide = /[LRC]$/.test(runwayExact);
+      const rvrData = {
+        value: rvrMatch[2],
+        unit: rvrMatch[3] ? 'ft' : 'm',
+        trend: rvrMatch[4] || null
+      };
+
+      // Для R05R/R05L храним только точный ключ, чтобы не протекало на противоположную ВПП
+      data.rvrReports[runwayExact] = rvrData;
+
+      // fallback без индикатора только если сам METAR-токен без L/R/C
+      if (!hasSide) {
+        data.rvrReports[runwayNormalized] = rvrData;
+      }
+    }
+
+    if (part === 'WS') {
+      // WS ALL RWY
+      if (i + 2 < parts.length && parts[i + 1] === 'ALL' && parts[i + 2] === 'RWY') {
+        if (!data.runwayAlerts.ALL) {
+          data.runwayAlerts.ALL = [];
+        }
+        data.runwayAlerts.ALL.push('WS');
+        i += 2;
+      }
+
+      // WS R22
+      const runwayMatch = i + 1 < parts.length ? parts[i + 1].match(/^R(\d{2}[LRC]?)$/) : null;
+      if (runwayMatch) {
+        const runway = runwayMatch[1];
+        const normalizedRunway = runway.replace(/[LRC]/g, '');
+        if (!data.runwayAlerts[normalizedRunway]) {
+          data.runwayAlerts[normalizedRunway] = [];
+        }
+        data.runwayAlerts[normalizedRunway].push('WS');
+        i++;
+      }
+    }
+
+    if (part.match(/^WSHFT(?:\d{2})?$/)) {
+      if (!data.runwayAlerts.ALL) {
+        data.runwayAlerts.ALL = [];
+      }
+      data.runwayAlerts.ALL.push('WSHFT');
+    }
+
     if (part.match(/^(SKC|CLR|FEW|SCT|BKN|OVC|NSC|NCD)\d{0,3}(CB|TCU)?$/)) {
       const coverage = part.match(/^(SKC|CLR|FEW|SCT|BKN|OVC|NSC|NCD)/)[1];
       const heightMatch = part.match(/\d{3}/);
@@ -3748,7 +3799,7 @@ function applyLanguage(lang) {
     document.getElementById('sunsetLabel').textContent = 'Заход';
     document.getElementById('weatherLabel').textContent = 'Явления погоды';
     document.getElementById('morLabel').textContent = 'Видимость';
-    document.getElementById('qbbLabel').textContent = 'ВНГО';
+    document.getElementById('qbbLabel').textContent = 'ВНГО/Ceiling';
     document.getElementById('skyConditionLabel').textContent = 'Облачность';
     document.getElementById('forecastLabel').textContent = 'Прогноз погоды';
     document.getElementById('specialLabel').textContent = 'Особые условия';
