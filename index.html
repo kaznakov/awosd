@@ -1500,6 +1500,13 @@ function parseFaaRemarksFromTokens(parts, language = 'ru') {
     return sign * value;
   };
 
+  const decodeSignedTenthsFromFour = (token) => {
+    if (!/^\d{4}$/.test(token)) return null;
+    const sign = token[0] === '1' ? -1 : 1;
+    const value = parseInt(token.slice(1), 10) / 10;
+    return sign * value;
+  };
+
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i];
 
@@ -1546,8 +1553,8 @@ function parseFaaRemarksFromTokens(parts, language = 'ru') {
         timeTextRu = ` в :${timePart}`;
         timeTextEn = ` at :${timePart}`;
       } else if (timePart.length === 4) {
-        timeTextRu = ` в ${timePart.slice(0,2)}:${timePart.slice(2)}`;
-        timeTextEn = ` at ${timePart.slice(0,2)}:${timePart.slice(2)}`;
+        timeTextRu = ` в ${timePart.slice(0, 2)}:${timePart.slice(2)}`;
+        timeTextEn = ` at ${timePart.slice(0, 2)}:${timePart.slice(2)}`;
       }
       pushDecoded(part, `Сдвиг ветра${timeTextRu}`, `Wind shift${timeTextEn}`, false);
       continue;
@@ -1574,10 +1581,27 @@ function parseFaaRemarksFromTokens(parts, language = 'ru') {
       continue;
     }
 
-    if (/^RAB\d{2}E\d{2}$/.test(part)) {
-      const m = part.match(/^RAB(\d{2})E(\d{2})$/);
+    if (/^(RA|SN)B\d{2}(?:E\d{2})?$/.test(part)) {
+      const m = part.match(/^(RA|SN)B(\d{2})(?:E(\d{2}))?$/);
       if (m) {
-        pushDecoded(part, `Дождь начался в :${m[1]}, закончился в :${m[2]}`, `Rain began at :${m[1]} and ended at :${m[2]}`, false);
+        const wx = m[1] === 'RA' ? { ru: 'Дождь', en: 'Rain' } : { ru: 'Снег', en: 'Snow' };
+        const began = m[2];
+        const ended = m[3];
+        pushDecoded(
+          part,
+          ended ? `${wx.ru} начался в :${began}, закончился в :${ended}` : `${wx.ru} начался в :${began}`,
+          ended ? `${wx.en} began at :${began} and ended at :${ended}` : `${wx.en} began at :${began}`,
+          false
+        );
+      }
+      continue;
+    }
+
+    if (/^(RA|SN)E\d{2}$/.test(part)) {
+      const m = part.match(/^(RA|SN)E(\d{2})$/);
+      if (m) {
+        const wx = m[1] === 'RA' ? { ru: 'Дождь', en: 'Rain' } : { ru: 'Снег', en: 'Snow' };
+        pushDecoded(part, `${wx.ru} закончился в :${m[2]}`, `${wx.en} ended at :${m[2]}`, false);
       }
       continue;
     }
@@ -1599,6 +1623,39 @@ function parseFaaRemarksFromTokens(parts, language = 'ru') {
       continue;
     }
 
+    if (/^1\d{4}$/.test(part)) {
+      const value = decodeSignedTenthsFromFour(part.slice(1));
+      if (value !== null) {
+        pushDecoded(part, `Максимум за 6 часов: ${value.toFixed(1)}°C`, `6-hour max temperature: ${value.toFixed(1)}°C`, false);
+      }
+      continue;
+    }
+
+    if (/^2\d{4}$/.test(part)) {
+      const value = decodeSignedTenthsFromFour(part.slice(1));
+      if (value !== null) {
+        pushDecoded(part, `Минимум за 6 часов: ${value.toFixed(1)}°C`, `6-hour min temperature: ${value.toFixed(1)}°C`, false);
+      }
+      continue;
+    }
+
+    if (/^4\d{8}$/.test(part)) {
+      const m = part.match(/^4(\d{4})(\d{4})$/);
+      if (m) {
+        const maxT = decodeSignedTenthsFromFour(m[1]);
+        const minT = decodeSignedTenthsFromFour(m[2]);
+        if (maxT !== null && minT !== null) {
+          pushDecoded(
+            part,
+            `24ч max/min: ${maxT.toFixed(1)}°C / ${minT.toFixed(1)}°C`,
+            `24h max/min: ${maxT.toFixed(1)}°C / ${minT.toFixed(1)}°C`,
+            false
+          );
+        }
+      }
+      continue;
+    }
+
     if (/^P\d{4}$/.test(part)) {
       const hundredthsInch = parseInt(part.slice(1), 10);
       if (!Number.isNaN(hundredthsInch)) {
@@ -1606,6 +1663,71 @@ function parseFaaRemarksFromTokens(parts, language = 'ru') {
         const mm = inches * 25.4;
         pushDecoded(part, `Осадки за 1 час: ${inches.toFixed(2)} in (${mm.toFixed(1)} мм)`, `1-hour precipitation: ${inches.toFixed(2)} in (${mm.toFixed(1)} mm)`, false);
       }
+      continue;
+    }
+
+    if (/^[67]\d{4}$/.test(part)) {
+      const periodHours = part[0] === '6' ? 3 : 24;
+      const hundredthsInch = parseInt(part.slice(1), 10);
+      if (!Number.isNaN(hundredthsInch)) {
+        const inches = hundredthsInch / 100;
+        const mm = inches * 25.4;
+        pushDecoded(
+          part,
+          `Осадки за ${periodHours}ч: ${inches.toFixed(2)} in (${mm.toFixed(1)} мм)`,
+          `${periodHours}-hour precipitation: ${inches.toFixed(2)} in (${mm.toFixed(1)} mm)`,
+          false
+        );
+      }
+      continue;
+    }
+
+    if (/^CIG\s*\d{3}V\d{3}$/.test(`${part}${parts[i + 1] ? ' ' + parts[i + 1] : ''}`)) {
+      const token = `${part} ${parts[i + 1]}`;
+      const m = token.match(/^CIG\s*(\d{3})V(\d{3})$/);
+      if (m) {
+        pushDecoded(token, `Потолок переменный: ${m[1]}-${m[2]} сот фут`, `Ceiling variable: ${m[1]}-${m[2]} hundreds ft`, false);
+      }
+      i += 1;
+      continue;
+    }
+
+    if (/^VIS\s+\d+(?:\/\d+)?V\d+(?:\/\d+)?$/.test(`${part} ${parts[i + 1] || ''}`)) {
+      const token = `${part} ${parts[i + 1]}`;
+      const m = token.match(/^VIS\s+(\d+(?:\/\d+)?)V(\d+(?:\/\d+)?)$/);
+      if (m) {
+        pushDecoded(token, `Видимость переменная: ${m[1]}-${m[2]} SM`, `Visibility variable: ${m[1]}-${m[2]} SM`, false);
+      }
+      i += 1;
+      continue;
+    }
+
+    if (/^VIS$/.test(part) && /^(N|S|E|W|NE|NW|SE|SW)\s+\d+(?:\/\d+)?$/.test(`${parts[i + 1] || ''} ${parts[i + 2] || ''}`)) {
+      const dir = parts[i + 1];
+      const val = parts[i + 2];
+      pushDecoded(`VIS ${dir} ${val}`, `Видимость по направлению ${dir}: ${val} SM`, `Directional visibility ${dir}: ${val} SM`, false);
+      i += 2;
+      continue;
+    }
+
+    if (/^LTG(?:[A-Z\s]+)?$/.test(part)) {
+      pushDecoded(part, `Молнии: ${part}`, `Lightning remark: ${part}`, false);
+      continue;
+    }
+
+    if (/^(PWINO|RVRNO|PNO)$/.test(part)) {
+      const map = {
+        PWINO: { ru: 'Данные пикового ветра недоступны', en: 'Peak wind data unavailable' },
+        RVRNO: { ru: 'Данные RVR недоступны', en: 'RVR data unavailable' },
+        PNO: { ru: 'Данные осадков недоступны', en: 'Precipitation data unavailable' }
+      };
+      pushDecoded(part, map[part].ru, map[part].en, false);
+      continue;
+    }
+
+    if (/^VISNO$/.test(part) && /^RWY\d{1,2}[LRC]?$/.test(parts[i + 1] || '')) {
+      pushDecoded(`VISNO ${parts[i + 1]}`, `Нет данных видимости для ${parts[i + 1]}`, `Visibility data unavailable for ${parts[i + 1]}`, false);
+      i += 1;
       continue;
     }
   }
