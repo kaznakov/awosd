@@ -1686,7 +1686,7 @@ function parseFaaRemarksFromTokens(parts, language = 'ru') {
       const token = `${part} ${parts[i + 1]}`;
       const m = token.match(/^CIG\s*(\d{3})V(\d{3})$/);
       if (m) {
-        pushDecoded(token, `Потолок переменный: ${m[1]}-${m[2]} сот фут`, `Ceiling variable: ${m[1]}-${m[2]} hundreds ft`, false);
+        pushDecoded(token, `Потолок переменный: ${m[1]}-${m[2]} сот фут`, `Ceiling variable: ${m[1]}-${m[2]} hundreds ft`, true);
       }
       i += 1;
       continue;
@@ -1696,7 +1696,7 @@ function parseFaaRemarksFromTokens(parts, language = 'ru') {
       const token = `${part} ${parts[i + 1]}`;
       const m = token.match(/^VIS\s+(\d+(?:\/\d+)?)V(\d+(?:\/\d+)?)$/);
       if (m) {
-        pushDecoded(token, `Видимость переменная: ${m[1]}-${m[2]} SM`, `Visibility variable: ${m[1]}-${m[2]} SM`, false);
+        pushDecoded(token, `Видимость переменная: ${m[1]}-${m[2]} SM`, `Visibility variable: ${m[1]}-${m[2]} SM`, true);
       }
       i += 1;
       continue;
@@ -1705,7 +1705,7 @@ function parseFaaRemarksFromTokens(parts, language = 'ru') {
     if (/^VIS$/.test(part) && /^(N|S|E|W|NE|NW|SE|SW)\s+\d+(?:\/\d+)?$/.test(`${parts[i + 1] || ''} ${parts[i + 2] || ''}`)) {
       const dir = parts[i + 1];
       const val = parts[i + 2];
-      pushDecoded(`VIS ${dir} ${val}`, `Видимость по направлению ${dir}: ${val} SM`, `Directional visibility ${dir}: ${val} SM`, false);
+      pushDecoded(`VIS ${dir} ${val}`, `Видимость по направлению ${dir}: ${val} SM`, `Directional visibility ${dir}: ${val} SM`, true);
       i += 2;
       continue;
     }
