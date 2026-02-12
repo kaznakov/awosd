@@ -1186,57 +1186,6 @@ function parseMetar(metarString) {
       data.runwayAlerts.ALL.push('WSHFT');
     }
 
-    // ПАРСИНГ RVR - формат R10/1200, R10/P1500, R10/0600V1000U, R10/0600FT
-    const rvrMatch = part.match(/^R(\d{2}[LRC]?)\/([MP]?\d{4}(?:V[MP]?\d{4})?)(FT)?([UDN])?$/);
-    if (rvrMatch) {
-      const runwayExact = rvrMatch[1];
-      const runwayNormalized = runwayExact.replace(/[LRC]/g, '');
-      const hasSide = /[LRC]$/.test(runwayExact);
-      const rvrData = {
-        value: rvrMatch[2],
-        unit: rvrMatch[3] ? 'ft' : 'm',
-        trend: rvrMatch[4] || null
-      };
-
-      // Для R05R/R05L храним только точный ключ, чтобы не протекало на противоположную ВПП
-      data.rvrReports[runwayExact] = rvrData;
-
-      // fallback без индикатора только если сам METAR-токен без L/R/C
-      if (!hasSide) {
-        data.rvrReports[runwayNormalized] = rvrData;
-      }
-    }
-
-    if (part === 'WS') {
-      // WS ALL RWY
-      if (i + 2 < parts.length && parts[i + 1] === 'ALL' && parts[i + 2] === 'RWY') {
-        if (!data.runwayAlerts.ALL) {
-          data.runwayAlerts.ALL = [];
-        }
-        data.runwayAlerts.ALL.push('WS');
-        i += 2;
-      }
-
-      // WS R22
-      const runwayMatch = i + 1 < parts.length ? parts[i + 1].match(/^R(\d{2}[LRC]?)$/) : null;
-      if (runwayMatch) {
-        const runway = runwayMatch[1];
-        const normalizedRunway = runway.replace(/[LRC]/g, '');
-        if (!data.runwayAlerts[normalizedRunway]) {
-          data.runwayAlerts[normalizedRunway] = [];
-        }
-        data.runwayAlerts[normalizedRunway].push('WS');
-        i++;
-      }
-    }
-
-    if (part.match(/^WSHFT(?:\d{2})?$/)) {
-      if (!data.runwayAlerts.ALL) {
-        data.runwayAlerts.ALL = [];
-      }
-      data.runwayAlerts.ALL.push('WSHFT');
-    }
-
     if (part.match(/^(SKC|CLR|FEW|SCT|BKN|OVC|NSC|NCD)\d{0,3}(CB|TCU)?$/)) {
       const coverage = part.match(/^(SKC|CLR|FEW|SCT|BKN|OVC|NSC|NCD)/)[1];
       const heightMatch = part.match(/\d{3}/);
@@ -3231,41 +3180,44 @@ function updateWeatherDisplay(data) {
     const pressure = convertPressure(data.pressure);
     const isAltimeterFormat = data.pressureSource === 'A';
 
-    const qnhRowHpa = document.querySelector('.qnh-row-hpa');
-    const qnhRowInhg = document.querySelector('.qnh-row-inhg');
-    const qnhRowMmhg = document.querySelector('.qnh-row-mmhg');
+    const qnhHpaValue = document.querySelector('.qnh-row-hpa .data-value');
+    const qnhHpaUnits = document.querySelector('.qnh-row-hpa .units');
+    const qnhInhgValue = document.querySelector('.qnh-row-inhg .data-value');
+    const qnhInhgUnits = document.querySelector('.qnh-row-inhg .units');
+    const qnhMmhgValue = document.querySelector('.qnh-row-mmhg .data-value');
+    const qnhMmhgUnits = document.querySelector('.qnh-row-mmhg .units');
 
-    const qnhRows = [qnhRowHpa, qnhRowInhg, qnhRowMmhg].filter(Boolean);
+    if (isAltimeterFormat) {
+      if (qnhHpaValue) qnhHpaValue.textContent = pressure.inhg;
+      if (qnhHpaUnits) qnhHpaUnits.textContent = 'inHg';
+      if (qnhInhgValue) qnhInhgValue.textContent = pressure.hpa;
+      if (qnhInhgUnits) qnhInhgUnits.textContent = 'hPa';
+    } else {
+      if (qnhHpaValue) qnhHpaValue.textContent = pressure.hpa;
+      if (qnhHpaUnits) qnhHpaUnits.textContent = 'hPa';
+      if (qnhInhgValue) qnhInhgValue.textContent = pressure.inhg;
+      if (qnhInhgUnits) qnhInhgUnits.textContent = 'inHg';
+    }
 
-    const topRowType = isAltimeterFormat ? 'inhg' : 'hpa';
-    const midRowType = isAltimeterFormat ? 'hpa' : 'inhg';
+    if (qnhMmhgValue) qnhMmhgValue.textContent = pressure.mmhg;
+    if (qnhMmhgUnits) qnhMmhgUnits.textContent = 'mmHg';
 
-    const rowData = {
-      hpa: { value: pressure.hpa, unit: 'hPa' },
-      inhg: { value: pressure.inhg, unit: 'inHg' },
-      mmhg: { value: pressure.mmhg, unit: 'mmHg' }
-    };
+    const tempRows = document.querySelectorAll('.weather-row');
+    let tempField = null;
+    let dewField = null;
 
-    const orderedRows = [
-      { row: qnhRows[0], type: topRowType },
-      { row: qnhRows[1], type: midRowType },
-      { row: qnhRows[2], type: 'mmhg' }
-    ];
+    tempRows.forEach((row) => {
+      const label = row.querySelector('.section-label');
+      const value = row.querySelector('.data-value');
+      const units = row.querySelector('.units');
+      if (!label || !value || !units) return;
 
-    orderedRows.forEach((item) => {
-      if (!item.row) return;
-      const valEl = item.row.querySelector('.data-value');
-      const unitEl = item.row.querySelector('.units');
-      if (valEl) valEl.textContent = rowData[item.type].value;
-      if (unitEl) unitEl.textContent = rowData[item.type].unit;
+      const labelText = label.textContent.trim();
+      const unitText = units.textContent.trim();
+
+      if (labelText === 'T' && unitText === '°C' && !tempField) tempField = value;
+      if (labelText === 'DP' && unitText === '°C' && !dewField) dewField = value;
     });
-
-    const tempField = Array.from(document.querySelectorAll('.weather-row'))
-      .find(row => row.querySelector('.section-label')?.textContent.trim() === 'T')
-      ?.querySelector('.data-value');
-    const dewField = Array.from(document.querySelectorAll('.weather-row'))
-      .find(row => row.querySelector('.section-label')?.textContent.trim() === 'DP')
-      ?.querySelector('.data-value');
 
     if (tempField) tempField.textContent = data.temperature !== null ? data.temperature : '-';
     if (dewField) dewField.textContent = data.dewpoint !== null ? data.dewpoint : '-';
