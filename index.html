@@ -1133,6 +1133,13 @@ function parseMetar(metarString) {
       }
     }
 
+    if (part.match(/^WSHFT(?:\d{2})?$/)) {
+      if (!data.runwayAlerts.ALL) {
+        data.runwayAlerts.ALL = [];
+      }
+      data.runwayAlerts.ALL.push('WSHFT');
+    }
+
     if (part.match(/^(SKC|CLR|FEW|SCT|BKN|OVC|NSC|NCD)\d{0,3}(CB|TCU)?$/)) {
       const coverage = part.match(/^(SKC|CLR|FEW|SCT|BKN|OVC|NSC|NCD)/)[1];
       const heightMatch = part.match(/\d{3}/);
@@ -2850,8 +2857,14 @@ function updateRunwayAlertDisplay(compassIndex) {
   const allRunwayAlerts = currentMetarData.runwayAlerts.ALL || [];
   const combinedAlerts = [...new Set([...allRunwayAlerts, ...runwayAlerts])];
 
+  const currentLang = document.getElementById('language')?.value || 'en';
   const decodeAlert = (alertCode) => {
-    if (alertCode === 'WS') return 'WIND SHEAR (СДВИГ ВЕТРА)';
+    if (alertCode === 'WS') {
+      return currentLang === 'ru' ? 'СДВИГ ВЕТРА' : 'WIND SHEAR';
+    }
+    if (alertCode === 'WSHFT') {
+      return currentLang === 'ru' ? 'СМЕНА ВЕТРА' : 'WIND SHIFT';
+    }
     return alertCode;
   };
 
