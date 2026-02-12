@@ -479,20 +479,20 @@ select:focus,input:focus{
 </div>
 </div>
 </div>
-<div class="weather-row">
+<div class="weather-row qnh-row qnh-row-hpa">
 <div class="section-label">QNH</div>
 <div class="data-field"><div class="data-value">-</div></div>
 <div class="units">hPa</div>
 </div>
-<div class="weather-row pressure-row">
-<div class="section-label"></div>
-<div class="data-field"><div class="data-value pressure-secondary">-</div></div>
-<div class="units">mmHg</div>
-</div>
-<div class="weather-row pressure-row">
+<div class="weather-row pressure-row qnh-row qnh-row-inhg">
 <div class="section-label"></div>
 <div class="data-field"><div class="data-value pressure-secondary">-</div></div>
 <div class="units">inHg</div>
+</div>
+<div class="weather-row pressure-row qnh-row qnh-row-mmhg">
+<div class="section-label"></div>
+<div class="data-field"><div class="data-value pressure-secondary">-</div></div>
+<div class="units">mmHg</div>
 </div>
 <div class="weather-row">
 <div class="section-label">T</div>
@@ -1046,6 +1046,7 @@ function parseMetar(metarString) {
     temperature: null,
     dewpoint: null,
     pressure: 0,
+    pressureSource: 'Q',
     runwayStates: [],
     runwayWinds: {},
     runwayAlerts: {},
@@ -1125,6 +1126,64 @@ function parseMetar(metarString) {
 
     if (part.match(/^Q\d{4}$/)) {
       data.pressure = parseInt(part.substring(1));
+      data.pressureSource = 'Q';
+    }
+
+    if (part.match(/^A\d{4}$/)) {
+      const inhg = parseInt(part.substring(1), 10) / 100;
+      data.pressure = Math.round(inhg * 33.8639);
+      data.pressureSource = 'A';
+    }
+
+    // ПАРСИНГ RVR - формат R10/1200, R10/P1500, R10/0600V1000U, R10/0600FT
+    const rvrMatch = part.match(/^R(\d{2}[LRC]?)\/([MP]?\d{4}(?:V[MP]?\d{4})?)(FT)?([UDN])?$/);
+    if (rvrMatch) {
+      const runwayExact = rvrMatch[1];
+      const runwayNormalized = runwayExact.replace(/[LRC]/g, '');
+      const hasSide = /[LRC]$/.test(runwayExact);
+      const rvrData = {
+        value: rvrMatch[2],
+        unit: rvrMatch[3] ? 'ft' : 'm',
+        trend: rvrMatch[4] || null
+      };
+
+      // Для R05R/R05L храним только точный ключ, чтобы не протекало на противоположную ВПП
+      data.rvrReports[runwayExact] = rvrData;
+
+      // fallback без индикатора только если сам METAR-токен без L/R/C
+      if (!hasSide) {
+        data.rvrReports[runwayNormalized] = rvrData;
+      }
+    }
+
+    if (part === 'WS') {
+      // WS ALL RWY
+      if (i + 2 < parts.length && parts[i + 1] === 'ALL' && parts[i + 2] === 'RWY') {
+        if (!data.runwayAlerts.ALL) {
+          data.runwayAlerts.ALL = [];
+        }
+        data.runwayAlerts.ALL.push('WS');
+        i += 2;
+      }
+
+      // WS R22
+      const runwayMatch = i + 1 < parts.length ? parts[i + 1].match(/^R(\d{2}[LRC]?)$/) : null;
+      if (runwayMatch) {
+        const runway = runwayMatch[1];
+        const normalizedRunway = runway.replace(/[LRC]/g, '');
+        if (!data.runwayAlerts[normalizedRunway]) {
+          data.runwayAlerts[normalizedRunway] = [];
+        }
+        data.runwayAlerts[normalizedRunway].push('WS');
+        i++;
+      }
+    }
+
+    if (part.match(/^WSHFT(?:\d{2})?$/)) {
+      if (!data.runwayAlerts.ALL) {
+        data.runwayAlerts.ALL = [];
+      }
+      data.runwayAlerts.ALL.push('WSHFT');
     }
 
     // ПАРСИНГ RVR - формат R10/1200, R10/P1500, R10/0600V1000U, R10/0600FT
@@ -1577,6 +1636,7 @@ function generateDemoData(icao) {
     temperature: 12,
     dewpoint: 8,
     pressure: 1013,
+    pressureSource: 'Q',
     runwayAlerts: {},
     rvrReports: {},
     forecast: '-'
@@ -2789,7 +2849,7 @@ function initializeDefaultCompassInfo(compassIndex) {
   qfeRow2.innerHTML = `
     <div class="section-label" style="visibility:hidden">QFE</div>
     <div class="data-field">-</div>
-    <div class="units">mmHg</div>
+    <div class="units">inHg</div>
   `;
   compassInfo.appendChild(qfeRow2);
 
@@ -2798,7 +2858,7 @@ function initializeDefaultCompassInfo(compassIndex) {
   qfeRow3.innerHTML = `
     <div class="section-label" style="visibility:hidden">QFE</div>
     <div class="data-field">-</div>
-    <div class="units">inHg</div>
+    <div class="units">mmHg</div>
   `;
   compassInfo.appendChild(qfeRow3);
 
@@ -2845,29 +2905,38 @@ function updateQFEDisplay(qfeId, qfeValue, elevation, compassIndex) {
   }
 
   const qfePressure = convertPressure(qfeValue);
+  const isAltimeterFormat = currentMetarData && currentMetarData.pressureSource === 'A';
+
+  const row1 = isAltimeterFormat
+    ? { value: qfePressure.inhg, unit: 'inHg' }
+    : { value: qfePressure.hpa, unit: 'hPa' };
+  const row2 = isAltimeterFormat
+    ? { value: qfePressure.hpa, unit: 'hPa' }
+    : { value: qfePressure.inhg, unit: 'inHg' };
+  const row3 = { value: qfePressure.mmhg, unit: 'mmHg' };
 
   const qfeRow1 = compassInfo.querySelector('.qfe-row-1') || document.createElement('div');
   qfeRow1.className = 'qfe-row-1 compass-info-item';
   qfeRow1.innerHTML = `
     <div class="section-label">QFE</div>
-    <div class="data-field">${qfePressure.hpa}</div>
-    <div class="units">hPa</div>
+    <div class="data-field">${row1.value}</div>
+    <div class="units">${row1.unit}</div>
   `;
 
   const qfeRow2 = compassInfo.querySelector('.qfe-row-2') || document.createElement('div');
   qfeRow2.className = 'qfe-row-2 compass-info-item';
   qfeRow2.innerHTML = `
     <div class="section-label" style="visibility:hidden">QFE</div>
-    <div class="data-field">${qfePressure.mmhg}</div>
-    <div class="units">mmHg</div>
+    <div class="data-field">${row2.value}</div>
+    <div class="units">${row2.unit}</div>
   `;
 
   const qfeRow3 = compassInfo.querySelector('.qfe-row-3') || document.createElement('div');
   qfeRow3.className = 'qfe-row-3 compass-info-item';
   qfeRow3.innerHTML = `
     <div class="section-label" style="visibility:hidden">QFE</div>
-    <div class="data-field">${qfePressure.inhg}</div>
-    <div class="units">inHg</div>
+    <div class="data-field">${row3.value}</div>
+    <div class="units">${row3.unit}</div>
   `;
 
   if (!compassInfo.contains(qfeRow1)) compassInfo.appendChild(qfeRow1);
@@ -3160,36 +3229,44 @@ function updateWeatherDisplay(data) {
 
   if (data.pressure && data.pressure > 0) {
     const pressure = convertPressure(data.pressure);
-    const allWeatherRows = document.querySelectorAll('.weather-row');
-    let hpaField = null, mmhgField = null, inhgField = null;
-    let tempField = null, dewField = null;
+    const isAltimeterFormat = data.pressureSource === 'A';
 
-    allWeatherRows.forEach((row) => {
-      const label = row.querySelector('.section-label');
-      const value = row.querySelector('.data-value');
-      const units = row.querySelector('.units');
+    const qnhRowHpa = document.querySelector('.qnh-row-hpa');
+    const qnhRowInhg = document.querySelector('.qnh-row-inhg');
+    const qnhRowMmhg = document.querySelector('.qnh-row-mmhg');
 
-      if (!value || !units) return;
+    const qnhRows = [qnhRowHpa, qnhRowInhg, qnhRowMmhg].filter(Boolean);
 
-      const labelText = label ? label.textContent.trim() : '';
-      const unitsText = units.textContent.trim();
+    const topRowType = isAltimeterFormat ? 'inhg' : 'hpa';
+    const midRowType = isAltimeterFormat ? 'hpa' : 'inhg';
 
-      if (unitsText === 'hPa' && !hpaField) {
-        hpaField = value;
-      } else if (unitsText === 'mmHg' && !mmhgField) {
-        mmhgField = value;
-      } else if (unitsText === 'inHg' && !inhgField) {
-        inhgField = value;
-      } else if (unitsText === '°C' && labelText === 'T' && !tempField) {
-        tempField = value;
-      } else if (unitsText === '°C' && labelText === 'DP' && !dewField) {
-        dewField = value;
-      }
+    const rowData = {
+      hpa: { value: pressure.hpa, unit: 'hPa' },
+      inhg: { value: pressure.inhg, unit: 'inHg' },
+      mmhg: { value: pressure.mmhg, unit: 'mmHg' }
+    };
+
+    const orderedRows = [
+      { row: qnhRows[0], type: topRowType },
+      { row: qnhRows[1], type: midRowType },
+      { row: qnhRows[2], type: 'mmhg' }
+    ];
+
+    orderedRows.forEach((item) => {
+      if (!item.row) return;
+      const valEl = item.row.querySelector('.data-value');
+      const unitEl = item.row.querySelector('.units');
+      if (valEl) valEl.textContent = rowData[item.type].value;
+      if (unitEl) unitEl.textContent = rowData[item.type].unit;
     });
 
-    if (hpaField) hpaField.textContent = pressure.hpa;
-    if (mmhgField) mmhgField.textContent = pressure.mmhg;
-    if (inhgField) inhgField.textContent = pressure.inhg;
+    const tempField = Array.from(document.querySelectorAll('.weather-row'))
+      .find(row => row.querySelector('.section-label')?.textContent.trim() === 'T')
+      ?.querySelector('.data-value');
+    const dewField = Array.from(document.querySelectorAll('.weather-row'))
+      .find(row => row.querySelector('.section-label')?.textContent.trim() === 'DP')
+      ?.querySelector('.data-value');
+
     if (tempField) tempField.textContent = data.temperature !== null ? data.temperature : '-';
     if (dewField) dewField.textContent = data.dewpoint !== null ? data.dewpoint : '-';
   }
