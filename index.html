@@ -1299,10 +1299,12 @@ function parseDirectionalVisibilityFromMetar(metarString, language = 'ru') {
     };
 
     const directionText = directionMap[language]?.[direction] || direction;
+    const unitText = language === 'ru' ? 'м' : 'm';
+    const visibilityLabel = language === 'ru' ? 'Видимость:' : 'Visibility:';
 
     result.push({
       code,
-      decoded: `${value} ${directionText}`
+      decoded: `${visibilityLabel} ${value} ${unitText} ${directionText}`
     });
   }
 
