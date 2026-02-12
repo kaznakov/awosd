@@ -1493,6 +1493,13 @@ function parseFaaRemarksFromTokens(parts, language = 'ru') {
     });
   };
 
+  const decodeTenthsTemperature = (group) => {
+    if (!group || !/^\d{4}$/.test(group)) return null;
+    const sign = group[0] === '1' ? -1 : 1;
+    const value = parseInt(group.slice(1), 10) / 10;
+    return sign * value;
+  };
+
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i];
 
@@ -1531,6 +1538,26 @@ function parseFaaRemarksFromTokens(parts, language = 'ru') {
       continue;
     }
 
+    if (/^WSHFT(?:\d{2,4})?$/.test(part)) {
+      const timePart = part.slice(5);
+      let timeTextRu = '';
+      let timeTextEn = '';
+      if (timePart.length === 2) {
+        timeTextRu = ` в :${timePart}`;
+        timeTextEn = ` at :${timePart}`;
+      } else if (timePart.length === 4) {
+        timeTextRu = ` в ${timePart.slice(0,2)}:${timePart.slice(2)}`;
+        timeTextEn = ` at ${timePart.slice(0,2)}:${timePart.slice(2)}`;
+      }
+      pushDecoded(part, `Сдвиг ветра${timeTextRu}`, `Wind shift${timeTextEn}`, false);
+      continue;
+    }
+
+    if (/^FZRANO$/.test(part)) {
+      pushDecoded(part, 'На станции не фиксировался переохлаждённый дождь', 'No freezing rain observed at the station', false);
+      continue;
+    }
+
     if (/^PRES(RR|FR)$/.test(part)) {
       const isRising = part.endsWith('RR');
       pushDecoded(
@@ -1544,6 +1571,41 @@ function parseFaaRemarksFromTokens(parts, language = 'ru') {
 
     if (/^TSNO$/.test(part)) {
       pushDecoded(part, 'Грозы поблизости нет', 'Thunderstorm not observed nearby', false);
+      continue;
+    }
+
+    if (/^RAB\d{2}E\d{2}$/.test(part)) {
+      const m = part.match(/^RAB(\d{2})E(\d{2})$/);
+      if (m) {
+        pushDecoded(part, `Дождь начался в :${m[1]}, закончился в :${m[2]}`, `Rain began at :${m[1]} and ended at :${m[2]}`, false);
+      }
+      continue;
+    }
+
+    if (/^T\d{8}$/.test(part)) {
+      const m = part.match(/^T(\d{4})(\d{4})$/);
+      if (m) {
+        const temp = decodeTenthsTemperature(m[1]);
+        const dew = decodeTenthsTemperature(m[2]);
+        if (temp !== null && dew !== null) {
+          pushDecoded(
+            part,
+            `Точная T/DP: ${temp.toFixed(1)}°C / ${dew.toFixed(1)}°C`,
+            `Precise T/DP: ${temp.toFixed(1)}°C / ${dew.toFixed(1)}°C`,
+            false
+          );
+        }
+      }
+      continue;
+    }
+
+    if (/^P\d{4}$/.test(part)) {
+      const hundredthsInch = parseInt(part.slice(1), 10);
+      if (!Number.isNaN(hundredthsInch)) {
+        const inches = hundredthsInch / 100;
+        const mm = inches * 25.4;
+        pushDecoded(part, `Осадки за 1 час: ${inches.toFixed(2)} in (${mm.toFixed(1)} мм)`, `1-hour precipitation: ${inches.toFixed(2)} in (${mm.toFixed(1)} mm)`, false);
+      }
       continue;
     }
   }
@@ -1681,10 +1743,6 @@ function updateSpecialConditionsLanguage(lang) {
     currentMetarData.specialConditions = parseSpecialConditionsFromRemarks(remarksSection, lang);
   } else {
     currentMetarData.specialConditions = { qfe: null, qbb: null, other: [], faaAnalysis: [] };
-  }
-
-  if (directionalVisibility.length > 0) {
-    currentMetarData.specialConditions.other.push(...directionalVisibility);
   }
 
   if (directionalVisibility.length > 0) {
