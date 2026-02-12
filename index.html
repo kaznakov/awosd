@@ -510,7 +510,7 @@ select:focus,input:focus{
 <div class="units">м</div>
 </div>
 <div class="weather-row">
-<div class="section-label" id="qbbLabel">QBB</div>
+<div class="section-label" id="qbbLabel">ВНГО/Ceiling</div>
 <div class="data-field"><div class="data-value">-</div></div>
 <div class="units">м</div>
 </div>
@@ -1350,12 +1350,24 @@ function updateSpecialConditionsLanguage(lang) {
   const specialEl = document.getElementById('specialConditions');
   if (!specialEl) return;
 
-  if (currentMetarData.specialConditions.other.length > 0) {
-    const specialTexts = currentMetarData.specialConditions.other.map(item => item.decoded);
-    specialEl.textContent = specialTexts.join(', ');
-  } else {
-    specialEl.textContent = '-';
+  specialEl.textContent = buildSpecialConditionsText(currentMetarData.specialConditions, lang);
+}
+
+function buildSpecialConditionsText(specialConditions, language = 'ru') {
+  if (!specialConditions) return '-';
+
+  const parts = [];
+
+  if (specialConditions.other && specialConditions.other.length > 0) {
+    parts.push(...specialConditions.other.map(item => item.decoded));
   }
+
+  if (specialConditions.qbb !== null && specialConditions.qbb !== undefined) {
+    const unit = language === 'ru' ? 'м' : 'm';
+    parts.push(`QBB ${specialConditions.qbb} ${unit}`);
+  }
+
+  return parts.length > 0 ? parts.join(', ') : '-';
 }
 
 async function fetchMetarData(icao) {
@@ -2937,24 +2949,19 @@ function updateWeatherDisplay(data) {
   const cloudBaseUnitsEl = document.querySelector('#qbbLabel').parentElement.querySelector('.units');
 
   if (cloudBaseEl && cloudBaseUnitsEl) {
-    if (data.specialConditions && data.specialConditions.qbb !== null) {
-      cloudBaseEl.textContent = data.specialConditions.qbb.toString();
-      cloudBaseUnitsEl.textContent = currentLanguage === 'ru' ? 'м' : 'm';
-    } else {
-      let cloudBaseText = '-';
+    let cloudBaseText = '-';
+    cloudBaseUnitsEl.textContent = currentLanguage === 'ru' ? 'фт' : 'ft';
 
-      const lowestCloudLayer = decodedClouds.layers
-        .filter(layer => layer.height && layer.height > 0 &&
-                       ['BKN', 'OVC', 'SCT', 'FEW'].includes(layer.coverageCode))
-        .sort((a, b) => a.height - b.height)[0];
+    const lowestCloudLayer = decodedClouds.layers
+      .filter(layer => layer.height && layer.height > 0 &&
+                     ['BKN', 'OVC', 'SCT', 'FEW'].includes(layer.coverageCode))
+      .sort((a, b) => a.height - b.height)[0];
 
-      if (lowestCloudLayer) {
-        cloudBaseText = lowestCloudLayer.height.toString();
-        cloudBaseUnitsEl.textContent = currentLanguage === 'ru' ? 'фт' : 'ft';
-      }
-
-      cloudBaseEl.textContent = cloudBaseText;
+    if (lowestCloudLayer) {
+      cloudBaseText = lowestCloudLayer.height.toString();
     }
+
+    cloudBaseEl.textContent = cloudBaseText;
   }
 
   const weatherEl = document.getElementById('weatherPhenomena');
@@ -2973,12 +2980,7 @@ function updateWeatherDisplay(data) {
 
   const specialEl = document.getElementById('specialConditions');
   if (specialEl) {
-    if (data.specialConditions && data.specialConditions.other && data.specialConditions.other.length > 0) {
-      const specialTexts = data.specialConditions.other.map(item => item.decoded);
-      specialEl.textContent = specialTexts.join(', ');
-    } else {
-      specialEl.textContent = '-';
-    }
+    specialEl.textContent = buildSpecialConditionsText(data.specialConditions, currentLanguage);
   }
 
   console.log(`🔄 Updating runway state displays...`);
@@ -3452,7 +3454,7 @@ function applyLanguage(lang) {
     document.getElementById('sunsetLabel').textContent = 'Заход';
     document.getElementById('weatherLabel').textContent = 'Явления погоды';
     document.getElementById('morLabel').textContent = 'Видимость';
-    document.getElementById('qbbLabel').textContent = 'ВНГО';
+    document.getElementById('qbbLabel').textContent = 'ВНГО/Ceiling';
     document.getElementById('skyConditionLabel').textContent = 'Облачность';
     document.getElementById('forecastLabel').textContent = 'Прогноз погоды';
     document.getElementById('specialLabel').textContent = 'Особые условия';
@@ -3475,7 +3477,7 @@ function applyLanguage(lang) {
     document.getElementById('sunsetLabel').textContent = 'Sunset';
     document.getElementById('weatherLabel').textContent = 'Weather';
     document.getElementById('morLabel').textContent = 'Visibility';
-    document.getElementById('qbbLabel').textContent = 'QBB';
+    document.getElementById('qbbLabel').textContent = 'ВНГО/Ceiling';
     document.getElementById('skyConditionLabel').textContent = 'Sky condition';
     document.getElementById('forecastLabel').textContent = 'Weather forecast';
     document.getElementById('specialLabel').textContent = 'Special conditions';
