@@ -1049,7 +1049,8 @@ function parseMetar(metarString) {
     runwayStates: [],
     runwayWinds: {},
     runwayAlerts: {},
-    rvrReports: {}
+    rvrReports: {},
+    forecast: '-'
   };
 
   let inRemarks = false;
@@ -1248,6 +1249,8 @@ function parseMetar(metarString) {
     }
   }
 
+  data.forecast = extractForecastSection(metarString);
+
   const remarksSection = extractRemarksSection(metarString);
   const currentLang = document.getElementById('language')?.value || 'en';
   const directionalVisibility = parseDirectionalVisibilityFromMetar(metarString, currentLang);
@@ -1267,6 +1270,34 @@ function parseMetar(metarString) {
   console.log(`📊 Parsed METAR runwayStates:`, data.runwayStates);
 
   return data;
+}
+
+
+function extractForecastSection(metarString) {
+  if (!metarString) return '-';
+
+  const parts = metarString.split(/\s+/);
+  let startIndex = -1;
+
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i].match(/^(NOSIG|TEMPO|BECMG|PROB\d{2})$/)) {
+      startIndex = i;
+      break;
+    }
+  }
+
+  if (startIndex === -1) return '-';
+
+  let endIndex = parts.length;
+  for (let i = startIndex; i < parts.length; i++) {
+    if (parts[i] === 'RMK') {
+      endIndex = i;
+      break;
+    }
+  }
+
+  const forecastTokens = parts.slice(startIndex, endIndex).join(' ').trim();
+  return forecastTokens || '-';
 }
 
 function extractRemarksSection(metarString) {
@@ -1547,7 +1578,8 @@ function generateDemoData(icao) {
     dewpoint: 8,
     pressure: 1013,
     runwayAlerts: {},
-    rvrReports: {}
+    rvrReports: {},
+    forecast: '-'
   };
 }
 
@@ -3120,6 +3152,11 @@ function updateWeatherDisplay(data) {
   }
 
   document.getElementById('metarCode').textContent = data.raw;
+
+  const forecastValueEl = document.querySelector('.forecast-field .forecast-value');
+  if (forecastValueEl) {
+    forecastValueEl.textContent = data.forecast || '-';
+  }
 
   if (data.pressure && data.pressure > 0) {
     const pressure = convertPressure(data.pressure);
