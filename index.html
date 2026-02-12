@@ -768,6 +768,70 @@ function convertPressure(hpa) {
   };
 }
 
+function convertSmToMeters(smValue) {
+  if (smValue === null || smValue === undefined || Number.isNaN(smValue)) return null;
+  return Math.round(smValue * 1609.344);
+}
+
+function parseVisibilityToken(parts, index) {
+  const token = parts[index];
+  if (!token) return null;
+
+  if (token === 'CAVOK') {
+    return { value: 9999, consumed: 0 };
+  }
+
+  const metersMatch = token.match(/^(\d{4})(?:NDV)?$/);
+  if (metersMatch) {
+    return { value: parseInt(metersMatch[1], 10), consumed: 0 };
+  }
+
+  const simpleSmMatch = token.match(/^(M|P)?(\d+)(?:\/(\d+))?SM$/);
+  if (simpleSmMatch) {
+    const qualifier = simpleSmMatch[1] || '';
+    const whole = parseInt(simpleSmMatch[2], 10);
+    const divisor = simpleSmMatch[3] ? parseInt(simpleSmMatch[3], 10) : null;
+    const valueSm = divisor ? whole / divisor : whole;
+    const meters = convertSmToMeters(valueSm);
+    if (meters === null) return null;
+    if (qualifier === 'M') return { value: Math.max(0, meters - 1), consumed: 0 };
+    if (qualifier === 'P') return { value: meters + 1, consumed: 0 };
+    return { value: meters, consumed: 0 };
+  }
+
+  const mixedSmWhole = token.match(/^(M|P)?(\d+)$/);
+  const mixedSmFraction = index + 1 < parts.length ? parts[index + 1].match(/^(\d+)\/(\d+)SM$/) : null;
+  if (mixedSmWhole && mixedSmFraction) {
+    const qualifier = mixedSmWhole[1] || '';
+    const whole = parseInt(mixedSmWhole[2], 10);
+    const numerator = parseInt(mixedSmFraction[1], 10);
+    const denominator = parseInt(mixedSmFraction[2], 10);
+
+    if (denominator === 0) return null;
+
+    const meters = convertSmToMeters(whole + numerator / denominator);
+    if (meters === null) return null;
+    if (qualifier === 'M') return { value: Math.max(0, meters - 1), consumed: 1 };
+    if (qualifier === 'P') return { value: meters + 1, consumed: 1 };
+    return { value: meters, consumed: 1 };
+  }
+
+  const fractionSmMatch = token.match(/^(M|P)?(\d+)\/(\d+)SM$/);
+  if (fractionSmMatch) {
+    const qualifier = fractionSmMatch[1] || '';
+    const numerator = parseInt(fractionSmMatch[2], 10);
+    const denominator = parseInt(fractionSmMatch[3], 10);
+    if (denominator === 0) return null;
+    const meters = convertSmToMeters(numerator / denominator);
+    if (meters === null) return null;
+    if (qualifier === 'M') return { value: Math.max(0, meters - 1), consumed: 0 };
+    if (qualifier === 'P') return { value: meters + 1, consumed: 0 };
+    return { value: meters, consumed: 0 };
+  }
+
+  return null;
+}
+
 function updateConnectionStatus(status, text) {
   const statusEl = document.getElementById('connectionStatus');
   if (!statusEl) return;
@@ -1114,8 +1178,11 @@ function parseMetar(metarString) {
       data.wind.variableTo = parseInt(winds[1], 10);
     }
 
-    if (part.match(/^\d{4}$/) && parseInt(part) > 100) {
-      data.visibility = parseInt(part);
+    const parsedVisibility = parseVisibilityToken(parts, i);
+    if (!inRemarks && !inForecastSection && parsedVisibility) {
+      data.visibility = parsedVisibility.value;
+      i += parsedVisibility.consumed;
+      continue;
     }
 
     if (part.match(/^M?\d{2}\/M?\d{2}$/)) {
