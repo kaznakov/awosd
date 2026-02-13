@@ -1172,6 +1172,7 @@ function parseMetar(metarString) {
     dewpoint: null,
     pressure: 0,
     pressureSource: 'Q',
+    pressureInhg: null,
     runwayStates: [],
     runwayWinds: {},
     runwayAlerts: {},
@@ -1256,12 +1257,14 @@ function parseMetar(metarString) {
     if (part.match(/^Q\d{4}$/)) {
       data.pressure = parseInt(part.substring(1));
       data.pressureSource = 'Q';
+      data.pressureInhg = null;
     }
 
     if (part.match(/^A\d{4}$/)) {
       const inhg = parseInt(part.substring(1), 10) / 100;
       data.pressure = Math.round(inhg * 33.8639);
       data.pressureSource = 'A';
+      data.pressureInhg = inhg.toFixed(2);
     }
 
     // ПАРСИНГ RVR - формат R10/1200, R10/P1500, R10/0600V1000U, R10/0600FT
@@ -1976,6 +1979,7 @@ function generateDemoData(icao) {
     dewpoint: 8,
     pressure: 1013,
     pressureSource: 'Q',
+    pressureInhg: null,
     runwayAlerts: {},
     rvrReports: {},
     forecast: '-'
@@ -3584,7 +3588,8 @@ function updateWeatherDisplay(data) {
     const qnhMmhgUnits = document.querySelector('.qnh-row-mmhg .units');
 
     if (isAltimeterFormat) {
-      if (qnhHpaValue) qnhHpaValue.textContent = pressure.inhg;
+      const displayInhg = data.pressureInhg || pressure.inhg;
+      if (qnhHpaValue) qnhHpaValue.textContent = displayInhg;
       if (qnhHpaUnits) qnhHpaUnits.textContent = 'inHg';
       if (qnhInhgValue) qnhInhgValue.textContent = pressure.hpa;
       if (qnhInhgUnits) qnhInhgUnits.textContent = 'hPa';
