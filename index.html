@@ -91,7 +91,7 @@ select:focus,input:focus{
 .popup-close{border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);border-radius:8px;padding:4px 10px;cursor:pointer}
 .popup-content{font-size:clamp(13px,1.2vw,16px);line-height:1.5;color:var(--text)}
 .popup-content h4{margin:10px 0 6px 0}
-.popup-content ul{margin:0 0 8px 18px}
+.popup-content ul,.popup-content ol{margin:0 0 8px 18px;padding-left:0}
 .popup-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .popup-link{display:inline-flex;align-items:center;justify-content:center;padding:6px 12px;border-radius:8px;border:1px solid rgba(59,130,246,.4);background:rgba(59,130,246,.12);color:var(--text);text-decoration:none;font-size:12px;font-weight:600}
 .popup-muted{color:var(--muted);font-size:12px;margin-top:8px}
@@ -4246,8 +4246,7 @@ function applyLanguage(lang) {
 }
 
 
-const SUPPORT_STRIPE_URL = 'https://stripe.com/payments/payment-links';
-const SUPPORT_PAYPAL_URL = 'https://www.paypal.com/donate/buttons';
+const SUPPORT_PAYPAL_URL = 'https://paypal.me/kaznakov';
 
 function getAboutPopupContent(lang = 'en') {
   if (lang === 'ru') {
@@ -4302,15 +4301,16 @@ function getSupportPopupContent(lang = 'en') {
     return {
       title: 'Support / Донаты',
       html: `
-        <h4>Рекомендуемый сервис</h4>
-        <p><strong>Stripe Payment Links</strong> — наиболее универсальный вариант для международных донатов: поддержка карт из разных стран, Apple Pay / Google Pay, прозрачные выплаты на американский банковский счёт.</p>
-        <h4>Резервный канал</h4>
-        <p><strong>PayPal Donate</strong> можно оставить как дополнительный способ для пользователей, предпочитающих PayPal.</p>
+        <p>AWOS Display — это независимый авиационный погодный проект, созданный для виртуальных диспетчеров.</p>
+        <p>Цель проста: максимально приближено к реальности.</p>
+        <p>Мы предоставляем наглядную, точную и оперативную визуализацию погодных данных для принятия более обоснованных решений в симуляции.</p>
+        <p>Проект разрабатывается и поддерживается независимо. Ваша поддержка помогает покрывать время разработки, расходы на инфраструктуру и внедрение новых функций.</p>
+        <p>Если AWOS Display помогает вам в обучении диспетчерскому делу или улучшает ваш опыт виртуальной авиации — рассмотрите возможность поддержать проект.</p>
+        <p>Каждый вклад помогает держать радар включённым.</p>
+        <p>✈ Спасибо, что помогаете проекту развиваться.</p>
         <div class="popup-actions">
-          <a class="popup-link" href="${SUPPORT_STRIPE_URL}" target="_blank" rel="noopener noreferrer">Stripe Payment Links</a>
-          <a class="popup-link" href="${SUPPORT_PAYPAL_URL}" target="_blank" rel="noopener noreferrer">PayPal Donate</a>
+          <a class="popup-link" href="${SUPPORT_PAYPAL_URL}" target="_blank" rel="noopener noreferrer">PayPal (paypal.me/kaznakov)</a>
         </div>
-        <div class="popup-muted">Для рабочего донат-сценария вставьте ваш персональный URL платежной страницы Stripe в коде (константа <code>SUPPORT_STRIPE_URL</code>).</div>
       `
     };
   }
@@ -4318,15 +4318,16 @@ function getSupportPopupContent(lang = 'en') {
   return {
     title: 'Support / Donations',
     html: `
-      <h4>Recommended service</h4>
-      <p><strong>Stripe Payment Links</strong> is the most practical default for global donations: broad card coverage, Apple Pay / Google Pay, and payouts to a US bank account.</p>
-      <h4>Fallback option</h4>
-      <p><strong>PayPal Donate</strong> can remain as a secondary channel for users who prefer PayPal.</p>
+      <p>AWOS Display is an independent aviation weather project built for virtual controllers.</p>
+      <p>The goal is simple: as real as it gets.</p>
+      <p>We provide clear, accurate and fast weather visualization to support better decision-making in the sim environment.</p>
+      <p>The project is developed and maintained independently. Your support helps cover development time, infrastructure costs and future features.</p>
+      <p>If AWOS Display improves your controller training or enhances your virtual aviation experience — consider supporting the project.</p>
+      <p>Every contribution keeps the radar running.</p>
+      <p>✈ Thank you for helping the project grow.</p>
       <div class="popup-actions">
-        <a class="popup-link" href="${SUPPORT_STRIPE_URL}" target="_blank" rel="noopener noreferrer">Stripe Payment Links</a>
-        <a class="popup-link" href="${SUPPORT_PAYPAL_URL}" target="_blank" rel="noopener noreferrer">PayPal Donate</a>
+        <a class="popup-link" href="${SUPPORT_PAYPAL_URL}" target="_blank" rel="noopener noreferrer">PayPal (paypal.me/kaznakov)</a>
       </div>
-      <div class="popup-muted">For production donations, replace <code>SUPPORT_STRIPE_URL</code> with your own Stripe payment link.</div>
     `
   };
 }
