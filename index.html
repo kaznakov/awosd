@@ -4254,11 +4254,11 @@ function getAboutPopupContent(lang = 'en') {
       title: 'О приложении AWOSD',
       html: `
         <h4>Назначение</h4>
-        <p>AWOSD — это инструмент для быстрого оперативного анализа METAR: погода, давление, видимость, состояние ВПП, RVR и боковая/встречная компонента ветра по выбранной ВПП.</p>
+        <p>AWOS Display — это инструмент для быстрого оперативного анализа METAR: погода, давление, видимость, состояние ВПП, RVR и боковая/встречная компонента ветра по выбранной ВПП.</p>
         <h4>Основной функционал</h4>
         <ul>
           <li>парсинг METAR с поддержкой международных и FAA RMK-групп;</li>
-          <li>отображение QNH/QFE, RVR, runway alerts, спецусловий и прогноза;</li>
+          <li>отображение QNH/QFE, RVR, спецусловий и прогноза;</li>
           <li>компасные блоки по двум направлениям ВПП с пересчётом ветра;</li>
           <li>переключение языка, темы и единиц ветра по клику.</li>
         </ul>
@@ -4266,8 +4266,8 @@ function getAboutPopupContent(lang = 'en') {
         <ol>
           <li>Введите ICAO-код (4 символа) в центральном поле.</li>
           <li>Выберите ВПП слева — вторая полоса выставится автоматически.</li>
-          <li>Проверьте METAR-декодирование в блоках Weather / Special conditions / Compass.</li>
           <li>Для переключения единиц ветра нажмите на значение ветра в центре компаса.</li>
+          <li>Для переключения формата времени (единое/местное) нажмите на часы в центральном блоке.</li>
         </ol>
       `
     };
@@ -4277,7 +4277,7 @@ function getAboutPopupContent(lang = 'en') {
     title: 'About AWOSD',
     html: `
       <h4>Purpose</h4>
-      <p>AWOSD is an operational METAR decoding tool focused on runway-oriented weather awareness: pressure, visibility, runway state, RVR, and wind components.</p>
+      <p>AWOS Display is an operational METAR decoding tool focused on runway-oriented weather awareness: pressure, visibility, runway state, RVR, and wind components.</p>
       <h4>Main features</h4>
       <ul>
         <li>METAR parsing with international and FAA RMK support;</li>
@@ -4289,8 +4289,8 @@ function getAboutPopupContent(lang = 'en') {
       <ol>
         <li>Enter a 4-letter ICAO code in the center input.</li>
         <li>Select a runway on the left; opposite runway is auto-populated.</li>
-        <li>Review decoded data in Weather / Special conditions / Compass blocks.</li>
         <li>Click the wind value in the compass center to toggle wind units.</li>
+        <li>Click the clock in the center block to toggle time format (UTC/local).</li>
       </ol>
     `
   };
@@ -4299,34 +4299,34 @@ function getAboutPopupContent(lang = 'en') {
 function getSupportPopupContent(lang = 'en') {
   if (lang === 'ru') {
     return {
-      title: 'Support / Донаты',
+      title: 'Поддержка',
       html: `
-        <p>AWOS Display — это независимый авиационный погодный проект, созданный для виртуальных диспетчеров.</p>
-        <p>Цель проста: максимально приближено к реальности.</p>
-        <p>Мы предоставляем наглядную, точную и оперативную визуализацию погодных данных для принятия более обоснованных решений в симуляции.</p>
-        <p>Проект разрабатывается и поддерживается независимо. Ваша поддержка помогает покрывать время разработки, расходы на инфраструктуру и внедрение новых функций.</p>
-        <p>Если AWOS Display помогает вам в обучении диспетчерскому делу или улучшает ваш опыт виртуальной авиации — рассмотрите возможность поддержать проект.</p>
-        <p>Каждый вклад помогает держать радар включённым.</p>
-        <p>✈ Спасибо, что помогаете проекту развиваться.</p>
+        <p><b>AWOS Display</b> — это независимый авиационный погодный проект, созданный для виртуальных диспетчеров.</p><br>
+        <p>Цель проста: <b>максимально приближено к реальности</b>.</p><br>
+        <p>Мы предоставляем наглядную, точную и оперативную визуализацию погодных данных для принятия более обоснованных решений в симуляции.</p><br>
+        <p>Проект разрабатывается и поддерживается независимо. Ваша поддержка помогает покрывать время разработки и внедрение новых функций.</p><br>
+        <p>Если <b>AWOS Display</b> помогает вам в обучении диспетчерскому делу или улучшает ваш опыт виртуальной авиации — рассмотрите возможность поддержать проект.</p><br>
+        <p>Каждый вклад помогает держать радар включённым.</p><br>
+        <p><b>✈</b> Спасибо, что помогаете проекту развиваться.</p>
         <div class="popup-actions">
-          <a class="popup-link" href="${SUPPORT_PAYPAL_URL}" target="_blank" rel="noopener noreferrer">PayPal (paypal.me/kaznakov)</a>
+          <a class="popup-link" href="${SUPPORT_PAYPAL_URL}" target="_blank" rel="noopener noreferrer">PayPal</a>
         </div>
       `
     };
   }
 
   return {
-    title: 'Support / Donations',
+    title: 'Support',
     html: `
-      <p>AWOS Display is an independent aviation weather project built for virtual controllers.</p>
-      <p>The goal is simple: as real as it gets.</p>
-      <p>We provide clear, accurate and fast weather visualization to support better decision-making in the sim environment.</p>
-      <p>The project is developed and maintained independently. Your support helps cover development time, infrastructure costs and future features.</p>
-      <p>If AWOS Display improves your controller training or enhances your virtual aviation experience — consider supporting the project.</p>
-      <p>Every contribution keeps the radar running.</p>
-      <p>✈ Thank you for helping the project grow.</p>
+      <p><b>AWOS Display</b> is an independent aviation weather project built for virtual controllers.</p><br>
+      <p>The goal is simple: <b>as real as it gets</b>.</p><br>
+      <p>We provide clear, accurate and fast weather visualization to support better decision-making in the sim environment.</p><br>
+      <p>The project is developed and maintained independently. Your support helps cover development time and future features.</p><br>
+      <p>If <b>AWOS Display</b> improves your controller training or enhances your virtual aviation experience — consider supporting the project.</p><br>
+      <p>Every contribution keeps the radar running.</p><br>
+      <p><b>✈</b> Thank you for helping the project grow.</p>
       <div class="popup-actions">
-        <a class="popup-link" href="${SUPPORT_PAYPAL_URL}" target="_blank" rel="noopener noreferrer">PayPal (paypal.me/kaznakov)</a>
+        <a class="popup-link" href="${SUPPORT_PAYPAL_URL}" target="_blank" rel="noopener noreferrer">PayPal</a>
       </div>
     `
   };
