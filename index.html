@@ -3904,7 +3904,7 @@ function getTrendDirection(current, previous) {
 
 function getTrendHtml(trend) {
   if (!trend) return '';
-  return ` <span style="font-weight:bold;">${trend === 'up' ? '↑' : '↓'}</span>`;
+  return ` <span style="color:#e74c3c;font-weight:bold;">${trend === 'up' ? '↑' : '↓'}</span>`;
 }
 
 function getCeilingFromClouds(clouds) {
@@ -4006,14 +4006,14 @@ function getWindTrendColor() {
   const trend = getWindTrend();
   if (!trend) return '';
 
-  return trend === 'increasing' ? '#e74c3c' : '#40c767'; // Красный/Зелёный
+  return '#e74c3c'; // Всегда красный
 }
 
 function getGustTrendColor() {
   const trend = getGustTrend();
   if (!trend) return '';
 
-  return trend === 'increasing' ? '#e74c3c' : '#40c767'; // Красный/Зелёный
+  return '#e74c3c'; // Всегда красный
 }
 
 // ========== РАСЧЁТ КОМПОНЕНТОВ ВЕТРА ==========

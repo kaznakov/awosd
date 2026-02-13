@@ -64,7 +64,7 @@ class TrendManager {
     }
     getTrendHTML(trend) {
         if (!trend) return '';
-        return `<span class="trend-indicator ${trend}">${trend === 'up' ? '↑' : '↓'}</span>`;
+        return `<span class="trend-indicator ${trend}" style="color:#e74c3c;font-weight:bold;">${trend === 'up' ? '↑' : '↓'}</span>`;
     }
     updateValue(key, value) { this.previousValues[key] = value; }
     getValue(key) { return this.previousValues[key]; }
