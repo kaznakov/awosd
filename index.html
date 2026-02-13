@@ -3252,6 +3252,8 @@ function updateQFEDisplay(qfeId, qfeValue, elevation, compassIndex) {
 
   const qfePressure = convertPressure(qfeValue);
   const isAltimeterFormat = currentMetarData && currentMetarData.pressureSource === 'A';
+  const qfeTrend = getTrendDirection(qfeValue, getPreviousQFEValue(elevation));
+  const qfeTrendHtml = getTrendHtml(qfeTrend);
 
   const row1 = isAltimeterFormat
     ? { value: qfePressure.inhg, unit: 'inHg' }
@@ -3265,7 +3267,7 @@ function updateQFEDisplay(qfeId, qfeValue, elevation, compassIndex) {
   qfeRow1.className = 'qfe-row-1 compass-info-item';
   qfeRow1.innerHTML = `
     <div class="section-label">QFE</div>
-    <div class="data-field">${row1.value}</div>
+    <div class="data-field">${row1.value}${qfeTrendHtml}</div>
     <div class="units">${row1.unit}</div>
   `;
 
@@ -3587,14 +3589,16 @@ function updateWeatherDisplay(data) {
     const qnhMmhgValue = document.querySelector('.qnh-row-mmhg .data-value');
     const qnhMmhgUnits = document.querySelector('.qnh-row-mmhg .units');
 
+    const qnhTrend = getTrendDirection(data.pressure, previousMetarData?.pressure);
+
     if (isAltimeterFormat) {
       const displayInhg = data.pressureInhg || pressure.inhg;
-      if (qnhHpaValue) qnhHpaValue.textContent = displayInhg;
+      if (qnhHpaValue) qnhHpaValue.innerHTML = `${displayInhg}${getTrendHtml(qnhTrend)}`;
       if (qnhHpaUnits) qnhHpaUnits.textContent = 'inHg';
       if (qnhInhgValue) qnhInhgValue.textContent = pressure.hpa;
       if (qnhInhgUnits) qnhInhgUnits.textContent = 'hPa';
     } else {
-      if (qnhHpaValue) qnhHpaValue.textContent = pressure.hpa;
+      if (qnhHpaValue) qnhHpaValue.innerHTML = `${pressure.hpa}${getTrendHtml(qnhTrend)}`;
       if (qnhHpaUnits) qnhHpaUnits.textContent = 'hPa';
       if (qnhInhgValue) qnhInhgValue.textContent = pressure.inhg;
       if (qnhInhgUnits) qnhInhgUnits.textContent = 'inHg';
@@ -3620,8 +3624,19 @@ function updateWeatherDisplay(data) {
       if (labelText === 'DP' && unitText === '°C' && !dewField) dewField = value;
     });
 
-    if (tempField) tempField.textContent = data.temperature !== null ? data.temperature : '-';
-    if (dewField) dewField.textContent = data.dewpoint !== null ? data.dewpoint : '-';
+    const tempTrend = getTrendDirection(data.temperature, previousMetarData?.temperature);
+    const dewTrend = getTrendDirection(data.dewpoint, previousMetarData?.dewpoint);
+
+    if (tempField) {
+      tempField.innerHTML = data.temperature !== null
+        ? `${data.temperature}${getTrendHtml(tempTrend)}`
+        : '-';
+    }
+    if (dewField) {
+      dewField.innerHTML = data.dewpoint !== null
+        ? `${data.dewpoint}${getTrendHtml(dewTrend)}`
+        : '-';
+    }
   }
 
   const currentLanguage = document.getElementById('language').value === 'ru' ? 'ru' : 'en';
@@ -3630,7 +3645,8 @@ function updateWeatherDisplay(data) {
   const visEl = visRow.querySelector('.data-value');
   const visUnits = visRow.querySelector('.units');
   const visDisplay = formatVisibilityForDisplay(data, currentLanguage);
-  if (visEl) visEl.textContent = visDisplay.value;
+  const visibilityTrend = getTrendDirection(data.visibility, previousMetarData?.visibility);
+  if (visEl) visEl.innerHTML = `${visDisplay.value}${getTrendHtml(visibilityTrend)}`;
   if (visUnits) visUnits.textContent = visDisplay.unit;
 
   const decodedClouds = decodeCloudiness(data.clouds, currentLanguage);
@@ -3656,7 +3672,12 @@ function updateWeatherDisplay(data) {
       cloudBaseText = lowestCloudLayer.height.toString();
     }
 
-    cloudBaseEl.textContent = cloudBaseText;
+    const cloudBaseTrend = getTrendDirection(
+      lowestCloudLayer?.height,
+      getCeilingFromClouds(previousMetarData?.clouds)
+    );
+
+    cloudBaseEl.innerHTML = `${cloudBaseText}${getTrendHtml(cloudBaseTrend)}`;
   }
 
   const weatherEl = document.getElementById('weatherPhenomena');
@@ -3868,6 +3889,45 @@ function getRunwayHeading(runwayIdent) {
 
   const runwayNumber = parseInt(runwayIdent.replace(/[LRC]/g, ''));
   return runwayNumber * 10;
+}
+
+// ========== ТЕНДЕНЦИИ ПОГОДНЫХ ПАРАМЕТРОВ ==========
+
+function getTrendDirection(current, previous) {
+  if (current === null || current === undefined || previous === null || previous === undefined) return null;
+  if (!Number.isFinite(Number(current)) || !Number.isFinite(Number(previous))) return null;
+
+  const difference = Number(current) - Number(previous);
+  if (difference === 0) return null;
+  return difference > 0 ? 'up' : 'down';
+}
+
+function getTrendHtml(trend) {
+  if (!trend) return '';
+  return ` <span style="font-weight:bold;">${trend === 'up' ? '↑' : '↓'}</span>`;
+}
+
+function getCeilingFromClouds(clouds) {
+  if (!Array.isArray(clouds) || clouds.length === 0) return null;
+
+  const candidates = clouds
+    .filter(layer => layer && Number.isFinite(Number(layer.height)) && Number(layer.height) > 0 && ['BKN', 'OVC', 'SCT', 'FEW'].includes(layer.coverage))
+    .map(layer => Number(layer.height));
+
+  if (candidates.length === 0) return null;
+  return Math.min(...candidates);
+}
+
+function getPreviousQFEValue(elevation) {
+  if (!previousMetarData) return null;
+
+  if (previousMetarData.specialConditions && previousMetarData.specialConditions.qfe !== null && previousMetarData.specialConditions.qfe !== undefined) {
+    const value = Number(previousMetarData.specialConditions.qfe);
+    return Number.isFinite(value) ? value : null;
+  }
+
+  if (!Number.isFinite(Number(previousMetarData.pressure)) || !Number.isFinite(Number(elevation))) return null;
+  return Number(previousMetarData.pressure) - (Number(elevation) / 8.5);
 }
 
 // ========== ТЕНДЕНЦИЯ ВЕТРА ==========
