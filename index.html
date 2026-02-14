@@ -3,7 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>AWOS Display</title>
+<title>VATSIM AWOSD</title>
+<script>
+window.AWOSD_GA4_ID = window.AWOSD_GA4_ID || 'G-XXXXXXXXXX';
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+
+if (window.AWOSD_GA4_ID && window.AWOSD_GA4_ID !== 'G-XXXXXXXXXX') {
+  const gaScript = document.createElement('script');
+  gaScript.async = true;
+  gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${window.AWOSD_GA4_ID}`;
+  document.head.appendChild(gaScript);
+
+  gtag('js', new Date());
+  gtag('config', window.AWOSD_GA4_ID, {
+    send_page_view: true,
+    anonymize_ip: true
+  });
+} else {
+  console.warn('GA4 disabled: set window.AWOSD_GA4_ID to your real Measurement ID (G-XXXX...).');
+}
+
+function trackAnalyticsEvent(eventName, params = {}) {
+  if (!window.AWOSD_GA4_ID || window.AWOSD_GA4_ID === 'G-XXXXXXXXXX') return;
+  gtag('event', eventName, params);
+}
+</script>
 <style>
 /* ========== БАЗОВЫЕ СТИЛИ ========== */
 *{margin:0;padding:0;box-sizing:border-box}
@@ -4116,6 +4141,7 @@ function handleIcaoInput() {
     if (i.length === 4) {
       if (!/^[A-Z0-9]{4}$/.test(i)) {
         updateConnectionStatus('error', 'Invalid ICAO code');
+        trackAnalyticsEvent('icao_search_invalid', { icao: i });
         return;
       }
 
@@ -4140,6 +4166,10 @@ function handleIcaoInput() {
 
         // ГИБРИДНАЯ ЗАГРУЗКА METAR С ИСТОРИЕЙ
         await loadMetarWithHistory(i);
+        trackAnalyticsEvent('icao_search_success', {
+          icao: i,
+          has_previous_metar: !!previousMetarData
+        });
         console.log(`📡 METAR загружен, runway states:`, currentMetarData.runwayStates);
         console.log(`📊 Previous METAR available:`, !!previousMetarData);
 
@@ -4156,6 +4186,7 @@ function handleIcaoInput() {
             // При автообновлении используем текущий как предыдущий
             previousMetarData = currentMetarData;
             currentMetarData = await fetchMetarData(i);
+            trackAnalyticsEvent('metar_auto_refresh', { icao: i });
 
             // Сохраняем в localStorage для будущих сессий
             saveMetarToLocalHistory(i, currentMetarData);
@@ -4178,6 +4209,10 @@ function handleIcaoInput() {
       } catch (error) {
         console.error(`Failed to load data for ${i}:`, error);
         updateConnectionStatus('error', `Failed to load ${i}`);
+        trackAnalyticsEvent('icao_search_error', {
+          icao: i,
+          error_message: (error && error.message) ? error.message : 'unknown'
+        });
       }
 
     } else if (i.length === 0) {
@@ -4221,6 +4256,10 @@ function toggleWindUnits() {
   const currentLang = document.getElementById('language')?.value || 'en';
 
   userPreferredWindUnit = isCurrentlyMps ? 'kt' : 'м/с';
+  trackAnalyticsEvent('wind_unit_toggle', {
+    from_unit: currentUnit,
+    to_unit: userPreferredWindUnit
+  });
 
   // Обновляем единицы измерения
   wu.forEach(u => {
@@ -4247,9 +4286,13 @@ function applyTheme(t) {
     else b.classList.add('dark');
   } else if (t === 'dark') b.classList.add('dark');
   else b.classList.remove('dark');
+
+  trackAnalyticsEvent('theme_change', { theme: t });
 }
 
 function applyLanguage(lang) {
+  trackAnalyticsEvent('language_change', { language: lang });
+
   if (lang === 'ru') {
     document.getElementById('timeLabel').textContent = 'Время UTC';
     document.getElementById('sunriseLabel').textContent = 'Восход';
@@ -4507,6 +4550,11 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeInfoPopups();
 
   document.getElementById('runwaySelect').addEventListener('change', function() {
+    const selectedRunway = this.value || null;
+    trackAnalyticsEvent('runway_select', {
+      runway: selectedRunway,
+      icao: document.getElementById('icaoInput')?.value || null
+    });
     updateOppositeRunway();
   });
 
