@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>VATSIM AWOSD</title>
 <script>
-window.AWOSD_GA4_ID = window.AWOSD_GA4_ID || 'G-XXXXXXXXXX';
+window.AWOSD_GA4_ID = window.AWOSD_GA4_ID || 'G-CYPRXKMXM2';
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 
-if (window.AWOSD_GA4_ID && window.AWOSD_GA4_ID !== 'G-XXXXXXXXXX') {
+if (window.AWOSD_GA4_ID && window.AWOSD_GA4_ID !== 'G-CYPRXKMXM2') {
   const gaScript = document.createElement('script');
   gaScript.async = true;
   gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${window.AWOSD_GA4_ID}`;
@@ -25,7 +25,7 @@ if (window.AWOSD_GA4_ID && window.AWOSD_GA4_ID !== 'G-XXXXXXXXXX') {
 }
 
 function trackAnalyticsEvent(eventName, params = {}) {
-  if (!window.AWOSD_GA4_ID || window.AWOSD_GA4_ID === 'G-XXXXXXXXXX') return;
+  if (!window.AWOSD_GA4_ID || window.AWOSD_GA4_ID === 'G-CYPRXKMXM2') return;
   gtag('event', eventName, params);
 }
 </script>
@@ -51,7 +51,7 @@ function trackAnalyticsEvent(eventName, params = {}) {
 body{font-family:'Segoe UI',system-ui,-apple-system,BlinkMacSystemFont,'Inter',sans-serif;background:radial-gradient(circle at top,#ffffff 0%,var(--bg) 45%,var(--bg-alt) 100%);transition:all .3s ease;color:var(--text)}
 body.dark{
   --bg:#111827;
-  --bg-alt:#0b1220;
+  --balt:#0b1220;
   --card:#1f2937;
   --card-border:rgba(148,163,184,.2);
   --text:#f9fafb;
