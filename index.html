@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>VATSIM AWOSD</title>
 <script>
-window.AWOSD_GA4_ID = window.AWOSD_GA4_ID || 'G-CYPRXKMXM2';
+window.AWOSD_GA4_ID = window.AWOSD_GA4_ID || 'G-2MMNHE9B4B';
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 
-if (window.AWOSD_GA4_ID && window.AWOSD_GA4_ID !== 'G-CYPRXKMXM2') {
+if (window.AWOSD_GA4_ID) {
   const gaScript = document.createElement('script');
   gaScript.async = true;
   gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${window.AWOSD_GA4_ID}`;
@@ -21,11 +21,11 @@ if (window.AWOSD_GA4_ID && window.AWOSD_GA4_ID !== 'G-CYPRXKMXM2') {
     anonymize_ip: true
   });
 } else {
-  console.warn('GA4 disabled: set window.AWOSD_GA4_ID to your real Measurement ID (G-XXXX...).');
+  console.warn('GA4 disabled: set window.AWOSD_GA4_ID to your Measurement ID.');
 }
 
 function trackAnalyticsEvent(eventName, params = {}) {
-  if (!window.AWOSD_GA4_ID || window.AWOSD_GA4_ID === 'G-CYPRXKMXM2') return;
+  if (!window.AWOSD_GA4_ID) return;
   gtag('event', eventName, params);
 }
 </script>
